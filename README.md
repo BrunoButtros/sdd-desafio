@@ -13,6 +13,7 @@ Aula bônus de SDD, fechando a trilha:
 1. **[`DESAFIO.md`](DESAFIO.md)** — o enunciado. Leia inteiro antes de escrever qualquer coisa.
 2. **[`RUBRICA.md`](RUBRICA.md)** — como você é avaliado. É pública de propósito; leia antes de começar.
 3. **[`exemplos/despesas-exemplo.json`](exemplos/despesas-exemplo.json)** — a entrada de referência. Não é decoração: percorra item por item antes de escrever a spec.
+4. **[`FAQ.md`](FAQ.md)** — travou? Comece por aqui. **O instrutor está fora durante o desafio**, então o FAQ é o canal de suporte.
 
 ---
 
@@ -53,6 +54,8 @@ Os arquivos em `template/` são esqueletos com as perguntas que cada documento p
 - Interações exportadas (`/export`) e commitadas em `docs/sessions/`
 
 **4. No Dia 2, às 10h**, você recebe uma mudança de requisito pelo canal da turma. Ela é obrigatória e vale 20 pontos. Chegue nesse momento com o sistema base funcionando e testado.
+
+> Durante os dois dias o instrutor está de férias e não responde mensagens. Dúvida de processo: [`FAQ.md`](FAQ.md). Dúvida sobre o que a política do RH significa não tem resposta — decidir isso é o exercício.
 
 **5. Entregue** enviando o link do seu fork no formulário. Prazo: **Dia 2, 18h**.
 
