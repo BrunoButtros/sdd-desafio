@@ -119,7 +119,7 @@ Vale para toda task deste arquivo, sem exceção:
 
 ## Fase 2 — Envelope e contrato do item
 
-- [ ] **T-004** — Validação do envelope (RN-001) e metadados opcionais
+- [x] **T-004** — Validação do envelope (RN-001) e metadados opcionais
   - **O que faz:** arquivo com envelope inválido (4.1) é recusado com exit `3`, sem escrever nada em `--output`; envelope válido segue com `colaborador` e `periodo.competencia` tolerantes, conforme a tabela de tolerância de 4.1.
   - **RN atendidas:** RN-001.
   - **CA atendidos:** CA-020.
@@ -136,7 +136,7 @@ Vale para toda task deste arquivo, sem exceção:
     mvn test -Dtest=EnvelopeValidoTest
     ```
   - **Commit:** `feat(T-004): valida envelope e metadados opcionais com testes` (1 commit).
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 - [ ] **T-005** — Contrato estrutural do item (RN-002) e preservação de `valor_informado`
   - **O que faz:** cada elemento de `despesas` vira um registro estruturalmente validado: `indice_entrada` atribuído (base 1, antes de qualquer validação, imutável); classificação fechada entre `CAMPO_AUSENTE`, `CAMPO_TIPO_INVALIDO` e `CAMPO_FORMATO_INVALIDO` por campo, conforme a regra fechada de 4.2; `ITEM_TIPO_INVALIDO` como motivo único quando o elemento não é objeto; motivos estruturais múltiplos emitidos na ordem canônica de contrato (id, data, categoria, descricao, fornecedor, valor, tem_nota_fiscal); `valor_informado` preservado exatamente como recebido, inclusive quando o tipo é inválido.
