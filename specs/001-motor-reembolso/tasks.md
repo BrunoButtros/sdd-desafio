@@ -340,7 +340,7 @@ Vale para toda task deste arquivo, sem exceção:
   - **Commit:** `feat(T-014): aplica teto individual de hospedagem com testes` (1 commit).
   - **Status:** [x] concluída
 
-- [ ] **T-015** — Viagem sem efeito e campos desconhecidos (RN-016)
+- [x] **T-015** — Viagem sem efeito e campos desconhecidos (RN-016)
   - **O que faz:** confirma, com teste de regressão, que nenhuma inferência de condição de viagem ocorre (nem por `descricao`, `fornecedor`, categoria, existência de hospedagem, nem por um eventual campo `em_viagem`) e que campos fora do contrato — tanto em `despesa` quanto em `colaborador` — são ignorados sem qualquer efeito no resultado.
   - **RN atendidas:** RN-016.
   - **CA atendidos:** CA-010.
@@ -360,7 +360,7 @@ Vale para toda task deste arquivo, sem exceção:
     mvn test "-Dtest=RegraViagemEfeitoNuloTest,CamposDesconhecidosTest"
     ```
   - **Commit (planejado):** `test(T-015): comprova efeito nulo de viagem e campos desconhecidos` (1 commit; ver contingência acima).
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 ---
 
