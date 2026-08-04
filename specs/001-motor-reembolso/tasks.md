@@ -182,7 +182,7 @@ Vale para toda task deste arquivo, sem exceção:
   - **Commit:** `feat(T-006): recusa todas as ocorrencias de id duplicado com testes` (1 commit).
   - **Status:** [x] concluída
 
-- [ ] **T-007** — Normalização monetária e de categoria (RN-004, RN-005)
+- [x] **T-007** — Normalização monetária e de categoria (RN-004, RN-005)
   - **O que faz:** todo `despesa.valor` estruturalmente válido normaliza para duas casas decimais com arredondamento `HALF_UP`; toda `despesa.categoria` estruturalmente válida normaliza por trim + insensibilidade a caixa/acento, e o resultado é **sempre produzido** — inclusive quando fica fora do vocabulário fechado (`coworking` normaliza para `coworking`, não para nulo), para que RN-007 (T-009) tenha texto para comparar.
   - **RN atendidas:** RN-004, RN-005.
   - **CA atendidos:** CA-009 (parcial — a fronteira de arredondamento monetário; a parte que envolve nota fiscal fecha em T-011), CA-015, CA-018.
@@ -201,7 +201,7 @@ Vale para toda task deste arquivo, sem exceção:
     mvn test "-Dtest=NormalizacaoMonetariaTest,NormalizacaoCategoriaTest"
     ```
   - **Commit:** `feat(T-007): normaliza valores e categorias com testes de fronteira` (1 commit).
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 - [ ] **T-008** — Valor não positivo (RN-006)
   - **O que faz:** item cujo valor normalizado seja menor ou igual a zero é recusado com `VALOR_NAO_POSITIVO` e fica marcado inelegível para as etapas seguintes (duplicidade econômica e agregação de tetos, ainda não implementadas nesta task).
