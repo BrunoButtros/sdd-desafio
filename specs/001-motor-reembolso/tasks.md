@@ -164,7 +164,7 @@ Vale para toda task deste arquivo, sem exceção:
 
 ## Fase 3 — Regras individuais de elegibilidade
 
-- [ ] **T-006** — Unicidade de `despesa.id` (RN-003)
+- [x] **T-006** — Unicidade de `despesa.id` (RN-003)
   - **O que faz:** todas as ocorrências de um `despesa.id` estruturalmente válido e repetido são recusadas com `ID_DUPLICADO` — sem preservar "primeira ocorrência". ID estruturalmente inválido não participa da verificação.
   - **RN atendidas:** RN-003.
   - **CA atendidos:** CA-019.
@@ -180,7 +180,7 @@ Vale para toda task deste arquivo, sem exceção:
     mvn test -Dtest=IdDuplicadoTest
     ```
   - **Commit:** `feat(T-006): recusa todas as ocorrencias de id duplicado com testes` (1 commit).
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 - [ ] **T-007** — Normalização monetária e de categoria (RN-004, RN-005)
   - **O que faz:** todo `despesa.valor` estruturalmente válido normaliza para duas casas decimais com arredondamento `HALF_UP`; toda `despesa.categoria` estruturalmente válida normaliza por trim + insensibilidade a caixa/acento, e o resultado é **sempre produzido** — inclusive quando fica fora do vocabulário fechado (`coworking` normaliza para `coworking`, não para nulo), para que RN-007 (T-009) tenha texto para comparar.
