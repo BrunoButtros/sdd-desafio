@@ -74,7 +74,7 @@ Vale para toda task deste arquivo, sem exceção:
 
 ## Fase 1 — Fundação técnica
 
-- [ ] **T-002** — Estrutura Maven, empacotamento e CLI básica
+- [x] **T-002** — Estrutura Maven, empacotamento e CLI básica
   - **O que faz:** projeto Java 21/Maven compila e empacota em `target/motor-reembolso.jar` via `mvn package`; a CLI reconhece `--input`/`--output`, lê o arquivo e recusa corretamente uso/infraestrutura inválidos (argumento ausente, arquivo inexistente, JSON sintaticamente inválido) com exit `2` — sem ainda validar nenhuma regra de negócio.
   - **Requisitos atendidos (RN/CA/DT):** nenhuma RN/CA nova (contrato de execução, não regra de negócio).
   - **DT/seções do plan:** DT-001 (linguagem e ambiente), DT-002 (empacotamento via Shade Plugin), DT-003 (parcial — apenas exit `2`), DT-009 (convenção `*Test` adotada desde o primeiro teste).
@@ -93,7 +93,7 @@ Vale para toda task deste arquivo, sem exceção:
   - **Commits (exceção autorizada — únicos 2 commits deste backlog):**
     - `chore(T-002): configura Maven e estrutura de testes`
     - `feat(T-002): adiciona CLI basica e erros de uso com testes`
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 - [ ] **T-003** — Vocabulários fechados e modelo de domínio
   - **O que faz:** cria as enumerações fechadas `MotivoCodigo`, `RegraNegocio`, `CampoCanonico` e `Decisao`, cada uma serializando para o texto canônico exigido pela spec (4.4/4.5) num único ponto por enum.
