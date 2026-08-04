@@ -278,7 +278,7 @@ Vale para toda task deste arquivo, sem exceção:
 
 ## Fase 4 — Elegibilidade coletiva e tetos
 
-- [ ] **T-012** — Duplicidade econômica (RN-010) e seleção de itens elegíveis
+- [x] **T-012** — Duplicidade econômica (RN-010) e seleção de itens elegíveis
   - **O que faz:** entre os itens sem nenhum motivo de recusa anterior (etapas 6 e 8 de 8.1 — seleção pós-validações individuais e seleção pós-duplicidade —, agrupadas nesta task por não terem, isoladamente, uma capacidade observável própria fora da duplicidade), detecta duplicidade econômica exata (mesma `data`, categoria normalizada, `valor` normalizado, `fornecedor` e `descricao` como recebidos) e mantém apenas a primeira ocorrência em ordem de `indice_entrada`; as posteriores recebem `DUPLICIDADE`.
   - **RN atendidas:** RN-010.
   - **CA atendidos:** CA-013 (cobertura estrutural/parcial — o fechamento do resultado final acontece em T-020), CA-014.
@@ -298,7 +298,7 @@ Vale para toda task deste arquivo, sem exceção:
     mvn test -Dtest=DuplicidadeEconomicaTest
     ```
   - **Commit:** `feat(T-012): trata duplicidade economica e selecao de elegiveis` (1 commit).
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 - [ ] **T-013** — Tetos diários com distribuição do saldo e corte parcial (RN-011, RN-012, RN-014, RN-015)
   - **O que faz:** para `alimentacao` e `transporte_urbano`, agrega o saldo elegível por `data` e categoria, consome-o em ordem crescente de `indice_entrada`, corta no teto (nunca recusa o agregado por ultrapassagem) e marca os itens posteriores ao esgotamento como `NAO_REEMBOLSADO_TETO_ESGOTADO` (distinto de `RECUSADO`).
