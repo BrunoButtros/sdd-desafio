@@ -255,7 +255,7 @@ Vale para toda task deste arquivo, sem exceção:
   - **Commit:** `feat(T-010): aplica competencia com bordas inclusivas e testes` (1 commit).
   - **Status:** [x] concluída
 
-- [ ] **T-011** — Nota fiscal obrigatória (RN-009) e `PoliticaReembolso`
+- [x] **T-011** — Nota fiscal obrigatória (RN-009) e `PoliticaReembolso`
   - **O que faz:** introduz a estrutura imutável `PoliticaReembolso` (limites de 60/80/250 e gatilho de nota fiscal de 100, todos fixados pela spec 1.1) e aplica RN-009: valor normalizado estritamente maior que R$ 100,00 sem `tem_nota_fiscal` é recusado com `NOTA_FISCAL_AUSENTE`, comparado sempre pelo valor individual normalizado, antes de qualquer corte por teto.
   - **RN atendidas:** RN-009.
   - **CA atendidos:** CA-008, CA-009 (parte de nota fiscal — completa a cobertura de CA-009 iniciada em T-007).
@@ -272,7 +272,7 @@ Vale para toda task deste arquivo, sem exceção:
     mvn test -Dtest=NotaFiscalTest
     ```
   - **Commit:** `feat(T-011): aplica obrigatoriedade de nota fiscal com testes` (1 commit).
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 ---
 

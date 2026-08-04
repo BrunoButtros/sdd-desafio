@@ -3,6 +3,7 @@ package com.desafio.reembolso.pipeline;
 import com.desafio.reembolso.modelo.Envelope;
 import com.desafio.reembolso.modelo.ItemValidado.Motivo;
 import com.desafio.reembolso.modelo.MotivoCodigo;
+import com.desafio.reembolso.modelo.PoliticaReembolso;
 import com.desafio.reembolso.modelo.RegraNegocio;
 import com.desafio.reembolso.pipeline.Normalizador.ItemNormalizado;
 
@@ -10,19 +11,20 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 /**
  * Avalia as regras individuais de negócio (spec 8.1, passo 5) sobre um
  * {@link ItemNormalizado}, cobrindo RN-006 (valor não positivo), RN-007
- * (categoria fora da política) e, nas sobrecargas que recebem
- * {@link Envelope}, RN-008 (elegibilidade temporal). Cada regra desta
- * classe só acrescenta motivos ao acumulador já existente (plan §4,
- * "Acumulador de motivos") — nunca remove os motivos estruturais, os de
- * {@code ID_DUPLICADO} ou os de regras anteriores já produzidos pelas
- * etapas anteriores do pipeline. As sobrecargas de um argumento não avaliam
- * RN-008, por não terem janela temporal disponível. RN-009 em diante entram
- * nas tasks seguintes, na mesma classe.
+ * (categoria fora da política), RN-009 (nota fiscal obrigatória, spec 8.2)
+ * e, nas sobrecargas que recebem {@link Envelope}, RN-008 (elegibilidade
+ * temporal). Cada regra desta classe só acrescenta motivos ao acumulador já
+ * existente (plan §4, "Acumulador de motivos") — nunca remove os motivos
+ * estruturais, os de {@code ID_DUPLICADO} ou os de regras anteriores já
+ * produzidos pelas etapas anteriores do pipeline. As sobrecargas de um
+ * argumento não avaliam RN-008, por não terem janela temporal disponível.
+ * RN-010 em diante entram nas tasks seguintes, em outras classes.
  */
 public final class AvaliadorRegrasIndividuais {
 
@@ -32,6 +34,8 @@ public final class AvaliadorRegrasIndividuais {
             new Motivo(MotivoCodigo.CATEGORIA_FORA_POLITICA, RegraNegocio.RN_007, null);
     private static final Motivo FORA_COMPETENCIA =
             new Motivo(MotivoCodigo.FORA_COMPETENCIA, RegraNegocio.RN_008, null);
+    private static final Motivo NOTA_FISCAL_AUSENTE =
+            new Motivo(MotivoCodigo.NOTA_FISCAL_AUSENTE, RegraNegocio.RN_009, null);
     private static final Set<String> CATEGORIAS_REEMBOLSAVEIS = Set.of(
             "alimentacao",
             "transporte_urbano",
@@ -39,23 +43,46 @@ public final class AvaliadorRegrasIndividuais {
     );
     private static final BigDecimal ZERO_ESCALA_2 = new BigDecimal("0.00");
 
-    private AvaliadorRegrasIndividuais() {
+    private static final AvaliadorRegrasIndividuais PADRAO =
+            new AvaliadorRegrasIndividuais(PoliticaReembolso.padrao());
+
+    private final PoliticaReembolso politica;
+
+    private AvaliadorRegrasIndividuais(PoliticaReembolso politica) {
+        this.politica = Objects.requireNonNull(politica);
     }
 
     public static ItemAvaliado avaliar(ItemNormalizado item) {
-        List<Motivo> motivos = avaliarRn006ERn007(item);
-        return finalizar(item, motivos);
+        return PADRAO.avaliarInterno(item);
     }
 
     public static List<ItemAvaliado> avaliarLista(List<ItemNormalizado> itens) {
+        return PADRAO.avaliarListaInterno(itens);
+    }
+
+    public static ItemAvaliado avaliar(ItemNormalizado item, Envelope envelope) {
+        return PADRAO.avaliarInterno(item, envelope);
+    }
+
+    public static List<ItemAvaliado> avaliarLista(List<ItemNormalizado> itens, Envelope envelope) {
+        return PADRAO.avaliarListaInterno(itens, envelope);
+    }
+
+    private ItemAvaliado avaliarInterno(ItemNormalizado item) {
+        List<Motivo> motivos = avaliarRn006ERn007(item);
+        avaliarRn009(item, motivos);
+        return finalizar(item, motivos);
+    }
+
+    private List<ItemAvaliado> avaliarListaInterno(List<ItemNormalizado> itens) {
         List<ItemAvaliado> resultado = new ArrayList<>(itens.size());
         for (ItemNormalizado item : itens) {
-            resultado.add(avaliar(item));
+            resultado.add(avaliarInterno(item));
         }
         return List.copyOf(resultado);
     }
 
-    public static ItemAvaliado avaliar(ItemNormalizado item, Envelope envelope) {
+    private ItemAvaliado avaliarInterno(ItemNormalizado item, Envelope envelope) {
         List<Motivo> motivos = avaliarRn006ERn007(item);
 
         LocalDate data = item.item().getData();
@@ -65,13 +92,15 @@ public final class AvaliadorRegrasIndividuais {
             motivos.add(FORA_COMPETENCIA);
         }
 
+        avaliarRn009(item, motivos);
+
         return finalizar(item, motivos);
     }
 
-    public static List<ItemAvaliado> avaliarLista(List<ItemNormalizado> itens, Envelope envelope) {
+    private List<ItemAvaliado> avaliarListaInterno(List<ItemNormalizado> itens, Envelope envelope) {
         List<ItemAvaliado> resultado = new ArrayList<>(itens.size());
         for (ItemNormalizado item : itens) {
-            resultado.add(avaliar(item, envelope));
+            resultado.add(avaliarInterno(item, envelope));
         }
         return List.copyOf(resultado);
     }
@@ -92,6 +121,21 @@ public final class AvaliadorRegrasIndividuais {
         }
 
         return motivos;
+    }
+
+    private void avaliarRn009(ItemNormalizado item, List<Motivo> motivos) {
+        BigDecimal valorNormalizado = item.valorNormalizado();
+        Boolean temNotaFiscal = item.item().getTemNotaFiscal();
+
+        boolean notaFiscalAusente = valorNormalizado != null
+                && temNotaFiscal != null
+                && valorNormalizado.compareTo(BigDecimal.ZERO) > 0
+                && valorNormalizado.compareTo(politica.getGatilhoNotaFiscal()) > 0
+                && !temNotaFiscal;
+
+        if (notaFiscalAusente && !motivos.contains(NOTA_FISCAL_AUSENTE)) {
+            motivos.add(NOTA_FISCAL_AUSENTE);
+        }
     }
 
     private static ItemAvaliado finalizar(ItemNormalizado item, List<Motivo> motivos) {
