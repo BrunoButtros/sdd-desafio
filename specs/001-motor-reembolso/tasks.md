@@ -323,7 +323,7 @@ Vale para toda task deste arquivo, sem exceção:
   - **Commit:** `feat(T-013): aplica tetos diarios e distribuicao do saldo com testes` (1 commit).
   - **Status:** [x] concluída
 
-- [ ] **T-014** — Teto individual de hospedagem (RN-013)
+- [x] **T-014** — Teto individual de hospedagem (RN-013)
   - **O que faz:** hospedagem é avaliada por lançamento, sem saldo compartilhado entre lançamentos — cada item de `hospedagem` tem teto próprio de R$ 250,00, independentemente do conteúdo da `descricao`.
   - **RN atendidas:** RN-013 (reaproveita o mecanismo de corte parcial de RN-014, já implementado em T-013).
   - **CA atendidos:** CA-007.
@@ -338,7 +338,7 @@ Vale para toda task deste arquivo, sem exceção:
     mvn test -Dtest=TetoHospedagemTest
     ```
   - **Commit:** `feat(T-014): aplica teto individual de hospedagem com testes` (1 commit).
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 - [ ] **T-015** — Viagem sem efeito e campos desconhecidos (RN-016)
   - **O que faz:** confirma, com teste de regressão, que nenhuma inferência de condição de viagem ocorre (nem por `descricao`, `fornecedor`, categoria, existência de hospedagem, nem por um eventual campo `em_viagem`) e que campos fora do contrato — tanto em `despesa` quanto em `colaborador` — são ignorados sem qualquer efeito no resultado.
