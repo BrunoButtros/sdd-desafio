@@ -300,7 +300,7 @@ Vale para toda task deste arquivo, sem exceção:
   - **Commit:** `feat(T-012): trata duplicidade economica e selecao de elegiveis` (1 commit).
   - **Status:** [x] concluída
 
-- [ ] **T-013** — Tetos diários com distribuição do saldo e corte parcial (RN-011, RN-012, RN-014, RN-015)
+- [x] **T-013** — Tetos diários com distribuição do saldo e corte parcial (RN-011, RN-012, RN-014, RN-015)
   - **O que faz:** para `alimentacao` e `transporte_urbano`, agrega o saldo elegível por `data` e categoria, consome-o em ordem crescente de `indice_entrada`, corta no teto (nunca recusa o agregado por ultrapassagem) e marca os itens posteriores ao esgotamento como `NAO_REEMBOLSADO_TETO_ESGOTADO` (distinto de `RECUSADO`).
   - **RN atendidas:** RN-011, RN-012, RN-014, RN-015.
   - **CA atendidos:** CA-004, CA-005, CA-006.
@@ -321,7 +321,7 @@ Vale para toda task deste arquivo, sem exceção:
     mvn test "-Dtest=TetoDiarioTest,ReembolsoParcialTest,DistribuicaoTetoTest"
     ```
   - **Commit:** `feat(T-013): aplica tetos diarios e distribuicao do saldo com testes` (1 commit).
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 - [ ] **T-014** — Teto individual de hospedagem (RN-013)
   - **O que faz:** hospedagem é avaliada por lançamento, sem saldo compartilhado entre lançamentos — cada item de `hospedagem` tem teto próprio de R$ 250,00, independentemente do conteúdo da `descricao`.
