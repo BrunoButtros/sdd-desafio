@@ -203,7 +203,7 @@ Vale para toda task deste arquivo, sem exceção:
   - **Commit:** `feat(T-007): normaliza valores e categorias com testes de fronteira` (1 commit).
   - **Status:** [x] concluída
 
-- [ ] **T-008** — Valor não positivo (RN-006)
+- [x] **T-008** — Valor não positivo (RN-006)
   - **O que faz:** item cujo valor normalizado seja menor ou igual a zero é recusado com `VALOR_NAO_POSITIVO` e fica marcado inelegível para as etapas seguintes (duplicidade econômica e agregação de tetos, ainda não implementadas nesta task).
   - **RN atendidas:** RN-006.
   - **CA atendidos:** CA-017 — **apenas a parte verificável nesta task**: recusa com `VALOR_NAO_POSITIVO` e `valor_reembolsavel` `0,00`. A parte de CA-017 que afirma que **o total do período não é reduzido** não é verificável aqui porque o total (`RN-018`) só existe a partir de `T-017`; essa parte do critério é reexercida em `T-017` (unidade) e confirmada ponta a ponta em `T-020` (integração).
@@ -219,7 +219,7 @@ Vale para toda task deste arquivo, sem exceção:
     mvn test -Dtest=ValorNaoPositivoTest
     ```
   - **Commit:** `feat(T-008): recusa valores nao positivos com testes` (1 commit).
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 - [ ] **T-009** — Categoria fora da política (RN-007)
   - **O que faz:** categoria normalizada fora do conjunto fechado (`alimentacao`, `transporte_urbano`, `hospedagem`) é recusada com `CATEGORIA_FORA_POLITICA` e marcada inelegível para a agregação de tetos.
