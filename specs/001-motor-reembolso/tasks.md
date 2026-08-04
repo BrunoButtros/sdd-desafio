@@ -221,7 +221,7 @@ Vale para toda task deste arquivo, sem exceção:
   - **Commit:** `feat(T-008): recusa valores nao positivos com testes` (1 commit).
   - **Status:** [x] concluída
 
-- [ ] **T-009** — Categoria fora da política (RN-007)
+- [x] **T-009** — Categoria fora da política (RN-007)
   - **O que faz:** categoria normalizada fora do conjunto fechado (`alimentacao`, `transporte_urbano`, `hospedagem`) é recusada com `CATEGORIA_FORA_POLITICA` e marcada inelegível para a agregação de tetos.
   - **RN atendidas:** RN-007.
   - **CA atendidos:** CA-016 — **apenas a parte verificável nesta task**: recusa com `CATEGORIA_FORA_POLITICA` e `valor_reembolsavel` `0,00`, e marcação do item como inelegível para agregação. Esta task **não** exige motivo de teto nem execução real do agregador — o agregador de tetos ainda não existe (é criado em `T-013`/`T-014`). A confirmação ponta a ponta de que o item de fato não alcança a etapa de teto fica em `T-020`.
@@ -236,7 +236,7 @@ Vale para toda task deste arquivo, sem exceção:
     mvn test -Dtest=CategoriaForaPoliticaTest
     ```
   - **Commit:** `feat(T-009): recusa categorias fora da politica com testes` (1 commit).
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 - [ ] **T-010** — Elegibilidade temporal (RN-008)
   - **O que faz:** item com `data` fora de `[periodo.inicio, periodo.fim]` é recusado com `FORA_COMPETENCIA`; ambas as bordas são inclusivas.

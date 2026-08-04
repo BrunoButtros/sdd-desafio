@@ -8,19 +8,28 @@ import com.desafio.reembolso.pipeline.Normalizador.ItemNormalizado;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Avalia as regras individuais de negócio (spec 8.1, passo 5) sobre um
- * {@link ItemNormalizado}, começando por RN-006 (valor não positivo). Cada
- * regra desta classe só acrescenta motivos ao acumulador já existente
- * (plan §4, "Acumulador de motivos") — nunca remove os motivos estruturais
- * ou de {@code ID_DUPLICADO} já produzidos pelas etapas anteriores do
- * pipeline. RN-007 em diante entram nas tasks seguintes, na mesma classe.
+ * {@link ItemNormalizado}, cobrindo RN-006 (valor não positivo) e RN-007
+ * (categoria fora da política). Cada regra desta classe só acrescenta
+ * motivos ao acumulador já existente (plan §4, "Acumulador de motivos") —
+ * nunca remove os motivos estruturais, os de {@code ID_DUPLICADO} ou os de
+ * regras anteriores já produzidos pelas etapas anteriores do pipeline.
+ * RN-008 em diante entram nas tasks seguintes, na mesma classe.
  */
 public final class AvaliadorRegrasIndividuais {
 
     private static final Motivo VALOR_NAO_POSITIVO =
             new Motivo(MotivoCodigo.VALOR_NAO_POSITIVO, RegraNegocio.RN_006, null);
+    private static final Motivo CATEGORIA_FORA_POLITICA =
+            new Motivo(MotivoCodigo.CATEGORIA_FORA_POLITICA, RegraNegocio.RN_007, null);
+    private static final Set<String> CATEGORIAS_REEMBOLSAVEIS = Set.of(
+            "alimentacao",
+            "transporte_urbano",
+            "hospedagem"
+    );
     private static final BigDecimal ZERO_ESCALA_2 = new BigDecimal("0.00");
 
     private AvaliadorRegrasIndividuais() {
@@ -33,6 +42,12 @@ public final class AvaliadorRegrasIndividuais {
                 && item.valorNormalizado().compareTo(BigDecimal.ZERO) <= 0;
         if (valorNaoPositivo && !motivos.contains(VALOR_NAO_POSITIVO)) {
             motivos.add(VALOR_NAO_POSITIVO);
+        }
+
+        boolean categoriaForaPolitica = item.categoriaNormalizada() != null
+                && !CATEGORIAS_REEMBOLSAVEIS.contains(item.categoriaNormalizada());
+        if (categoriaForaPolitica && !motivos.contains(CATEGORIA_FORA_POLITICA)) {
+            motivos.add(CATEGORIA_FORA_POLITICA);
         }
 
         List<Motivo> motivosFinal = List.copyOf(motivos);
