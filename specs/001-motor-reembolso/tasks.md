@@ -238,7 +238,7 @@ Vale para toda task deste arquivo, sem exceção:
   - **Commit:** `feat(T-009): recusa categorias fora da politica com testes` (1 commit).
   - **Status:** [x] concluída
 
-- [ ] **T-010** — Elegibilidade temporal (RN-008)
+- [x] **T-010** — Elegibilidade temporal (RN-008)
   - **O que faz:** item com `data` fora de `[periodo.inicio, periodo.fim]` é recusado com `FORA_COMPETENCIA`; ambas as bordas são inclusivas.
   - **RN atendidas:** RN-008.
   - **CA atendidos:** CA-011, CA-012.
@@ -253,7 +253,7 @@ Vale para toda task deste arquivo, sem exceção:
     mvn test -Dtest=CompetenciaTest
     ```
   - **Commit:** `feat(T-010): aplica competencia com bordas inclusivas e testes` (1 commit).
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 - [ ] **T-011** — Nota fiscal obrigatória (RN-009) e `PoliticaReembolso`
   - **O que faz:** introduz a estrutura imutável `PoliticaReembolso` (limites de 60/80/250 e gatilho de nota fiscal de 100, todos fixados pela spec 1.1) e aplica RN-009: valor normalizado estritamente maior que R$ 100,00 sem `tem_nota_fiscal` é recusado com `NOTA_FISCAL_AUSENTE`, comparado sempre pelo valor individual normalizado, antes de qualquer corte por teto.
