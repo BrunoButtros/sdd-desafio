@@ -95,7 +95,7 @@ Vale para toda task deste arquivo, sem exceção:
     - `feat(T-002): adiciona CLI basica e erros de uso com testes`
   - **Status:** [x] concluída
 
-- [ ] **T-003** — Vocabulários fechados e modelo de domínio
+- [x] **T-003** — Vocabulários fechados e modelo de domínio
   - **O que faz:** cria as enumerações fechadas `MotivoCodigo`, `RegraNegocio`, `CampoCanonico` e `Decisao`, cada uma serializando para o texto canônico exigido pela spec (4.4/4.5) num único ponto por enum.
   - **Requisitos atendidos:** nenhuma RN/CA diretamente — é a infraestrutura de vocabulário que RN-002 em diante consome.
   - **DT/seções do plan:** DT-008; plan §4 (Modelo de dados) e §6.
@@ -113,7 +113,7 @@ Vale para toda task deste arquivo, sem exceção:
     mvn test -Dtest=VocabularioMotivoTest
     ```
   - **Commit:** `feat(T-003): implementa vocabularios fechados com testes` (1 commit).
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 ---
 
