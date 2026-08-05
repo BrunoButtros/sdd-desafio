@@ -467,7 +467,7 @@ Vale para toda task deste arquivo, sem exceção:
 
 ## Fase 7 — Documentação final
 
-- [ ] **T-021** — README com instruções reais de build, execução e testes
+- [x] **T-021** — README com instruções reais de build, execução e testes
   - **O que faz:** documenta, em comandos reais e testados manualmente, como compilar, executar e testar o projeto — de forma multiplataforma, sem depender de um caminho específico de um sistema operacional.
   - **Requisitos atendidos:** nenhuma RN/CA/DT diretamente — atende ao critério "Produto funciona" da rubrica e evita a penalidade transversal "README não permite rodar o projeto".
   - **Dependências:** T-020 (documenta um sistema já testado de ponta a ponta).
@@ -489,7 +489,7 @@ Vale para toda task deste arquivo, sem exceção:
     roda a suíte inteira sem falhas. Os três comandos são apresentados em linhas separadas (sem `&&`) e usam caminho relativo (`resultado.json`, não `/tmp/out.json`), funcionando tanto em PowerShell quanto em outros terminais.
   - **Comandos de verificação:** os três comandos do critério de aceite, executados manualmente em sequência, cada um em sua própria linha.
   - **Commit:** `docs(readme): [T-021] documenta build execucao e testes` (1 commit).
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 ---
 
