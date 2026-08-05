@@ -784,7 +784,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
   - **Commit sugerido:** `feat(T-032): implementa LeitorCambio com inversao para consulta por data`
   - **Status:** [x] concluída
 
-- [ ] **T-033** — Testes de fronteira do `LeitorCambio`
+- [x] **T-033** — Testes de fronteira do `LeitorCambio`
   - **O que faz:** completa a cobertura de `plan.md` §7, ponto 9: `fonte`/`observacao` presentes com tipo não textual invalidam o arquivo (são campos **conhecidos**, não "desconhecidos"); uma chave malformada dentro de `taxas` — data fora de `AAAA-MM-DD` ou moeda fora de `[A-Z]{3}` — **não** é tratada como campo desconhecido, e invalida o arquivo inteiro, mesmo que a tolerância a campos desconhecidos valha na raiz; e a garantia de imutabilidade da estrutura invertida.
   - **RN atendidas:** RN-020, RN-022.
   - **CA atendidos:** CA-046.
@@ -802,7 +802,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
     mvn -q test -Dtest=LeitorCambioTest
     ```
   - **Commit sugerido:** `test(T-033): cobre fonte/observacao, chaves malformadas e imutabilidade do LeitorCambio`
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 ---
 

@@ -14,7 +14,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.util.NavigableMap;
 import java.util.Optional;
+import java.util.TreeMap;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -312,6 +314,42 @@ class LeitorCambioTest {
         esperarInvalida(documentoComObservacao("true"));
     }
 
+    // ---- fonte / observacao — demais estados fechados de tipo inválido ----
+    // (completa, junto dos testes acima, os sete estados de cada campo:
+    // ausente, texto, null explícito, número, booleano, lista, objeto)
+
+    static Stream<Arguments> casosFonteTipoInvalidoRestante() {
+        return Stream.of(
+                Arguments.of("null explícito", "null"),
+                Arguments.of("booleano", "true"),
+                Arguments.of("lista", "[]"),
+                Arguments.of("objeto", "{}")
+        );
+    }
+
+    @ParameterizedTest(name = "fonte {0}")
+    @MethodSource("casosFonteTipoInvalidoRestante")
+    @DisplayName("fonte com null explícito, booleano, lista ou objeto rejeita o arquivo inteiro")
+    void fonteTipoInvalidoRestanteRejeitada(String rotulo, String valorJson) throws IOException {
+        esperarInvalida(documentoComFonte(valorJson));
+    }
+
+    static Stream<Arguments> casosObservacaoTipoInvalidoRestante() {
+        return Stream.of(
+                Arguments.of("null explícito", "null"),
+                Arguments.of("número", "123"),
+                Arguments.of("lista", "[]"),
+                Arguments.of("objeto", "{}")
+        );
+    }
+
+    @ParameterizedTest(name = "observacao {0}")
+    @MethodSource("casosObservacaoTipoInvalidoRestante")
+    @DisplayName("observacao com null explícito, número, lista ou objeto rejeita o arquivo inteiro")
+    void observacaoTipoInvalidoRestanteRejeitada(String rotulo, String valorJson) throws IOException {
+        esperarInvalida(documentoComObservacao(valorJson));
+    }
+
     // ---- campos desconhecidos na raiz, ignorados sem invalidar o arquivo --
 
     @Test
@@ -364,5 +402,32 @@ class LeitorCambioTest {
         assertTrue(fallback.isPresent());
         assertEquals(LocalDate.of(2026, 7, 17), fallback.get().data());
         assertEquals(0, new BigDecimal("5.96").compareTo(fallback.get().taxa()));
+    }
+
+    // ---- imutabilidade da TabelaCambio produzida pelo leitor ---------------
+
+    @Test
+    @DisplayName("mapa externo de cotacoesPorMoeda é imutável")
+    void mapaExternoDeCotacoesPorMoedaImutavel() {
+        Path fixture = Path.of("tests", "resources", "fixtures", "cambio-valido-teste.json");
+        TabelaCambio tabela = LeitorCambio.ler(fixture);
+
+        assertThrows(UnsupportedOperationException.class,
+                () -> tabela.getCotacoesPorMoeda().put("GBP", new TreeMap<>()));
+    }
+
+    @Test
+    @DisplayName("cada NavigableMap interno de cotacoesPorMoeda é imutável")
+    void navigableMapInternoDeCotacoesPorMoedaImutavel() {
+        Path fixture = Path.of("tests", "resources", "fixtures", "cambio-valido-teste.json");
+        TabelaCambio tabela = LeitorCambio.ler(fixture);
+
+        NavigableMap<LocalDate, BigDecimal> cotacoesUsd = tabela.getCotacoesPorMoeda().get("USD");
+        assertThrows(UnsupportedOperationException.class,
+                () -> cotacoesUsd.put(LocalDate.of(2099, 1, 1), BigDecimal.TEN));
+
+        NavigableMap<LocalDate, BigDecimal> cotacoesEur = tabela.getCotacoesPorMoeda().get("EUR");
+        assertThrows(UnsupportedOperationException.class,
+                () -> cotacoesEur.put(LocalDate.of(2099, 1, 1), BigDecimal.TEN));
     }
 }
