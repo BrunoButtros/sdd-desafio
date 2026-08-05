@@ -408,7 +408,7 @@ Vale para toda task deste arquivo, sem exceção:
 
 ## Fase 6 — CLI final e integração
 
-- [ ] **T-018** — Escritor JSON de saída
+- [x] **T-018** — Escritor JSON de saída
   - **O que faz:** serializa o resultado geral conforme 4.3 — valores monetários como números JSON decimais em notação simples, com exatamente duas casas, nunca em notação científica e nunca como string.
   - **Requisitos atendidos:** nenhuma RN/CA nova isoladamente (é I/O, não regra de negócio) — é o que torna 4.3 observável na prática; contribui para CA-001/CA-002/CA-003 quando exercitado ponta a ponta em T-020.
   - **DT/seções do plan:** plan §7 (serialização monetária).
@@ -423,7 +423,7 @@ Vale para toda task deste arquivo, sem exceção:
     mvn test -Dtest=EscritorResultadoTest
     ```
   - **Commit:** `feat(T-018): serializa resultado monetario conforme a spec` (1 commit).
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 - [ ] **T-019** — Conclusão da CLI: escrita atômica do destino e contrato final (DT-010)
   - **O que faz:** fecha o contrato de execução por completo. O resultado é serializado para um arquivo temporário no mesmo diretório do destino e só então movido/substituído atomicamente (`Files.move` com `ATOMIC_MOVE` + `REPLACE_EXISTING`) sobre `--output`; qualquer falha nos códigos `2` ou `3` preserva um `--output` preexistente intacto; sucesso (exit `0`) substitui o destino pelo resultado completo.
