@@ -445,7 +445,7 @@ Vale para toda task deste arquivo, sem exceção:
   - **Commit:** `feat(T-019): conclui CLI com escrita atomica e testes de contrato` (1 commit).
   - **Status:** [x] concluída
 
-- [ ] **T-020** — Teste de integração completo (14 itens, total R$ 585,43)
+- [x] **T-020** — Teste de integração completo (14 itens, total R$ 585,43)
   - **O que faz:** executa o pipeline inteiro, de ponta a ponta, contra `exemplos/despesas-exemplo.json`, comparando o resultado **estruturalmente** (JSON contra JSON, campo a campo — nunca comparação textual) contra um fixture de saída esperada.
   - **Requisitos atendidos:** nenhuma RN nova — é a verificação cruzada de todas; fecha formalmente CA-001, CA-002, CA-003, e confirma ponta a ponta as partes de CA-013, CA-016 e CA-017 que dependiam de execução completa do pipeline (duplicidade econômica com resultado final; item fora de política de fato não alcança teto; item de valor não positivo de fato não reduz o total).
   - **CA atendidos:** CA-001, CA-002, CA-003 (fechamento); confirmação ponta a ponta de CA-013, CA-016 e CA-017. Em particular, `ExemploCompletoTest` declara explicitamente, sobre o par `d-006`/`d-007` do arquivo de exemplo, que a **primeira ocorrência** (`d-006`) é `INTEGRALMENTE_REEMBOLSADO` com `valor_reembolsavel` `54,90`, e a **ocorrência posterior** (`d-007`) é `RECUSADO` com `valor_reembolsavel` `0,00` e motivo `DUPLICIDADE` — fechando o resultado final que T-012 deixou apenas estruturalmente verificado.
@@ -461,7 +461,7 @@ Vale para toda task deste arquivo, sem exceção:
     mvn test -Dtest=ExemploCompletoTest
     ```
   - **Commit:** `test(T-020): valida exemplo completo e total de 585,43` (1 commit).
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 ---
 
