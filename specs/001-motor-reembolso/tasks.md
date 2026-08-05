@@ -760,7 +760,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
 
 ### Bloco C — Leitor de câmbio externo
 
-- [ ] **T-032** — Implementar `LeitorCambio.ler(Path)`
+- [x] **T-032** — Implementar `LeitorCambio.ler(Path)`
   - **O que faz:** lê e valida integralmente `cambio.json` (spec 4.1.1, RN-020, RN-022, AMB-035), invertendo a estrutura `data → moeda → taxa` para `moeda → NavigableMap<data, taxa>` (DT-013) na própria leitura. Sucesso devolve `TabelaCambio`; qualquer falha lança `CambioInvalidoException` (aninhada em `LeitorCambio`, mesmo padrão de `EnvelopeInvalidoException`/`PoliticaInvalidaException`, `CODIGO_SAIDA = 2`).
   - **RN atendidas:** RN-020, RN-022.
   - **CA atendidos:** CA-036 (parcial — câmbio), CA-046.
@@ -782,7 +782,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
     mvn -q test -Dtest=LeitorCambioTest
     ```
   - **Commit sugerido:** `feat(T-032): implementa LeitorCambio com inversao para consulta por data`
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 - [ ] **T-033** — Testes de fronteira do `LeitorCambio`
   - **O que faz:** completa a cobertura de `plan.md` §7, ponto 9: `fonte`/`observacao` presentes com tipo não textual invalidam o arquivo (são campos **conhecidos**, não "desconhecidos"); uma chave malformada dentro de `taxas` — data fora de `AAAA-MM-DD` ou moeda fora de `[A-Z]{3}` — **não** é tratada como campo desconhecido, e invalida o arquivo inteiro, mesmo que a tolerância a campos desconhecidos valha na raiz; e a garantia de imutabilidade da estrutura invertida.

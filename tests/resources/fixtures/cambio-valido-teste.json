@@ -1,0 +1,10 @@
+{
+  "moeda_base": "BRL",
+  "fonte": "Fixture de teste (T-032)",
+  "observacao": "Dados fixos para consulta exata e fallback anterior",
+  "taxas": {
+    "2026-07-15": { "USD": 5.40, "EUR": 5.88 },
+    "2026-07-17": { "USD": 5.47, "EUR": 5.96 },
+    "2026-07-20": { "USD": 5.50, "EUR": 6.01 }
+  }
+}
