@@ -235,9 +235,12 @@ public final class CompositorSaida {
      * Tabela explícita de precedência de apresentação (spec 8.3) — nunca
      * {@code enum.ordinal()}. Estágio 0: {@code ITEM_TIPO_INVALIDO}
      * (sempre único). Estágio 1: os três motivos estruturais, desempatados
-     * por {@link #ORDEM_CAMPO}. Estágios 2 a 7: a sequência fixa de
-     * {@code ID_DUPLICADO} a {@code DUPLICIDADE}. Estágio 8: os motivos de
-     * limitação de teto, que na prática aparecem sozinhos.
+     * por {@link #ORDEM_CAMPO}. Estágios 2 a 9: a sequência fixa de
+     * {@code ID_DUPLICADO} a {@code DUPLICIDADE}, incluindo os dois motivos
+     * de política v4 ({@code MOEDA_SEM_COTACAO} no estágio 3 e
+     * {@code CATEGORIA_NAO_REEMBOLSAVEL_CENTRO_CUSTO} no estágio 6).
+     * Estágio 10: os motivos de limitação de teto, que na prática aparecem
+     * sozinhos.
      */
     private static Map<MotivoCodigo, Integer> criarEstagios() {
         Map<MotivoCodigo, Integer> mapa = new EnumMap<>(MotivoCodigo.class);
@@ -246,14 +249,17 @@ public final class CompositorSaida {
         mapa.put(MotivoCodigo.CAMPO_TIPO_INVALIDO, 1);
         mapa.put(MotivoCodigo.CAMPO_FORMATO_INVALIDO, 1);
         mapa.put(MotivoCodigo.ID_DUPLICADO, 2);
-        mapa.put(MotivoCodigo.VALOR_NAO_POSITIVO, 3);
-        mapa.put(MotivoCodigo.CATEGORIA_FORA_POLITICA, 4);
-        mapa.put(MotivoCodigo.FORA_COMPETENCIA, 5);
-        mapa.put(MotivoCodigo.NOTA_FISCAL_AUSENTE, 6);
-        mapa.put(MotivoCodigo.DUPLICIDADE, 7);
-        mapa.put(MotivoCodigo.TETO_DIARIO_APLICADO, 8);
-        mapa.put(MotivoCodigo.TETO_DIARIO_ESGOTADO, 8);
-        mapa.put(MotivoCodigo.TETO_HOSPEDAGEM_APLICADO, 8);
+        mapa.put(MotivoCodigo.MOEDA_SEM_COTACAO, 3);
+        mapa.put(MotivoCodigo.VALOR_NAO_POSITIVO, 4);
+        mapa.put(MotivoCodigo.CATEGORIA_FORA_POLITICA, 5);
+        mapa.put(MotivoCodigo.CATEGORIA_NAO_REEMBOLSAVEL_CENTRO_CUSTO, 6);
+        mapa.put(MotivoCodigo.FORA_COMPETENCIA, 7);
+        mapa.put(MotivoCodigo.NOTA_FISCAL_AUSENTE, 8);
+        mapa.put(MotivoCodigo.DUPLICIDADE, 9);
+        mapa.put(MotivoCodigo.TETO_DIARIO_APLICADO, 10);
+        mapa.put(MotivoCodigo.TETO_DIARIO_ESGOTADO, 10);
+        mapa.put(MotivoCodigo.TETO_HOSPEDAGEM_APLICADO, 10);
+        mapa.put(MotivoCodigo.TETO_INDIVIDUAL_APLICADO, 10);
         return Collections.unmodifiableMap(mapa);
     }
 

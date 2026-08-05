@@ -532,7 +532,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
   - **Commit sugerido:** `feat(T-022): estende CampoCanonico com despesa.moeda e atualiza ordem de campo no CompositorSaida`
   - **Status:** [x] concluída
 
-- [ ] **T-023** — Estender `MotivoCodigo` com os três códigos novos
+- [x] **T-023** — Estender `MotivoCodigo` com os três códigos novos
   - **O que faz:** acrescenta `MOEDA_SEM_COTACAO`, `CATEGORIA_NAO_REEMBOLSAVEL_CENTRO_CUSTO` e `TETO_INDIVIDUAL_APLICADO` ao vocabulário fechado de códigos de motivo (spec 4.5), cada um serializando para o próprio nome do enum (mesmo mecanismo já existente). No **mesmo commit**, `CompositorSaida.criarEstagios()` é atualizado para reconhecer os três códigos — não se pode esperar até T-048, porque `MOEDA_SEM_COTACAO` já é produzido em T-037 e integrado ao pipeline em T-038, `CATEGORIA_NAO_REEMBOLSAVEL_CENTRO_CUSTO` já é produzido em T-041 e integrado em T-042, e `TETO_INDIVIDUAL_APLICADO` já é produzido em T-044 e integrado em T-046 — todos antes de T-048. Sem esta atualização imediata, um motivo válido produzido por qualquer uma dessas tasks faria `CompositorSaida.estagioDe(...)` lançar `IllegalArgumentException` ("código de motivo fora do vocabulário fechado de precedência").
   - **RN atendidas:** RN-019, RN-020.
   - **CA atendidos:** base para CA-027, CA-030, CA-049 (fechados nos blocos G/F/H).
@@ -553,7 +553,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
     mvn -q test "-Dtest=VocabularioMotivoTest,OrdemMotivosTest"
     ```
   - **Commit sugerido:** `feat(T-023): estende MotivoCodigo com os tres codigos da politica v4 e atualiza estagios do CompositorSaida`
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 - [ ] **T-024** — Estender `RegraNegocio` com RN-019 a RN-022
   - **O que faz:** acrescenta `RN_019`, `RN_020`, `RN_021`, `RN_022` ao vocabulário fechado de regras, cada uma serializando para `"RN-NNN"` (mesmo mecanismo já existente: `name().replace('_', '-')`).

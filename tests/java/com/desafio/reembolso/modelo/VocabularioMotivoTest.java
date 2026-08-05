@@ -31,14 +31,17 @@ class VocabularioMotivoTest {
             "CAMPO_TIPO_INVALIDO, CAMPO_TIPO_INVALIDO",
             "CAMPO_FORMATO_INVALIDO, CAMPO_FORMATO_INVALIDO",
             "ID_DUPLICADO, ID_DUPLICADO",
+            "MOEDA_SEM_COTACAO, MOEDA_SEM_COTACAO",
             "VALOR_NAO_POSITIVO, VALOR_NAO_POSITIVO",
             "CATEGORIA_FORA_POLITICA, CATEGORIA_FORA_POLITICA",
+            "CATEGORIA_NAO_REEMBOLSAVEL_CENTRO_CUSTO, CATEGORIA_NAO_REEMBOLSAVEL_CENTRO_CUSTO",
             "FORA_COMPETENCIA, FORA_COMPETENCIA",
             "NOTA_FISCAL_AUSENTE, NOTA_FISCAL_AUSENTE",
             "DUPLICIDADE, DUPLICIDADE",
             "TETO_DIARIO_APLICADO, TETO_DIARIO_APLICADO",
             "TETO_DIARIO_ESGOTADO, TETO_DIARIO_ESGOTADO",
             "TETO_HOSPEDAGEM_APLICADO, TETO_HOSPEDAGEM_APLICADO",
+            "TETO_INDIVIDUAL_APLICADO, TETO_INDIVIDUAL_APLICADO",
     })
     @DisplayName("Spec 4.5 / DT-008 — MotivoCodigo")
     void motivoCodigoSerializaTextoCanonico(MotivoCodigo valor, String textoCanonico) throws Exception {
@@ -46,9 +49,9 @@ class VocabularioMotivoTest {
     }
 
     @Test
-    @DisplayName("MotivoCodigo cobre exatamente os treze valores de 4.5, nenhum a mais nem a menos")
-    void motivoCodigoTemTrezeValores() {
-        assertEquals(13, MotivoCodigo.values().length);
+    @DisplayName("MotivoCodigo cobre exatamente os dezesseis valores de 4.5 (T-023: acrescenta os três da politica v4), nenhum a mais nem a menos")
+    void motivoCodigoTemDezesseisValores() {
+        assertEquals(16, MotivoCodigo.values().length);
     }
 
     @ParameterizedTest(name = "RegraNegocio.RN_{0} serializa para \"RN-{0}\"")
