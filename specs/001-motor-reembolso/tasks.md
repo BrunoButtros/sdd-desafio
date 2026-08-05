@@ -629,7 +629,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
   - **Commit sugerido:** `feat(T-026): cria modelo imutavel PoliticaExterna`
   - **Status:** [x] concluída
 
-- [ ] **T-027** — Criar `TabelaCambio`
+- [x] **T-027** — Criar `TabelaCambio`
   - **O que faz:** cria a estrutura imutável `TabelaCambio` (`moedaBase: String`, `cotacoesPorMoeda: Map<String, NavigableMap<LocalDate, BigDecimal>>`), já na forma invertida de consulta eficiente (moeda → data → taxa, DT-013), com uma API de consulta fechada que devolve, num único objeto, a data da cotação efetivamente usada **e** a taxa correspondente — nunca a taxa isolada, porque `data_cotacao_utilizada` (spec 4.3) é campo de auditoria própria e não pode ser recalculada fora do ponto de consulta que já sabe qual entrada foi usada. Nesta task o modelo é só a estrutura — a leitura/inversão a partir de `cambio.json` é `LeitorCambio` (T-032).
   - **RN atendidas:** RN-020.
   - **CA atendidos:** base estrutural para CA-029, CA-030, CA-046.
@@ -662,7 +662,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
     mvn -q test -Dtest=TabelaCambioTest
     ```
   - **Commit sugerido:** `feat(T-027): cria TabelaCambio com CotacaoResolvida via floorEntry`
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 - [ ] **T-028** — Criar `TabelaPoliticaResolvida`
   - **O que faz:** cria a estrutura imutável `TabelaPoliticaResolvida` (`categorias: Map<String, TabelaCategoria>`, `origem: Origem` — enum interno `PADRAO`/`CENTRO_CUSTO` —, `nomeCentroCusto: String`, nulo quando `origem == PADRAO`). É o tipo de retorno de `ResolutorPoliticaCentroCusto.resolver(...)` (T-040) — nesta task só a estrutura.
