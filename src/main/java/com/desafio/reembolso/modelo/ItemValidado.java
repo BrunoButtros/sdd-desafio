@@ -30,6 +30,10 @@ public final class ItemValidado {
     private final Boolean temNotaFiscal;
     private final JsonNode valorInformado;
     private final List<Motivo> motivos;
+    private final String moeda;
+    private final BigDecimal taxaCambioAplicada;
+    private final LocalDate dataCotacaoUtilizada;
+    private final BigDecimal valorConvertidoBruto;
 
     public ItemValidado(int indiceEntrada,
                          String id,
@@ -41,6 +45,24 @@ public final class ItemValidado {
                          Boolean temNotaFiscal,
                          JsonNode valorInformado,
                          List<Motivo> motivos) {
+        this(indiceEntrada, id, data, categoria, descricao, fornecedor, valor, temNotaFiscal,
+                valorInformado, motivos, "BRL", BigDecimal.ONE, null, valor);
+    }
+
+    public ItemValidado(int indiceEntrada,
+                         String id,
+                         LocalDate data,
+                         String categoria,
+                         String descricao,
+                         String fornecedor,
+                         BigDecimal valor,
+                         Boolean temNotaFiscal,
+                         JsonNode valorInformado,
+                         List<Motivo> motivos,
+                         String moeda,
+                         BigDecimal taxaCambioAplicada,
+                         LocalDate dataCotacaoUtilizada,
+                         BigDecimal valorConvertidoBruto) {
         this.indiceEntrada = indiceEntrada;
         this.id = id;
         this.data = data;
@@ -51,6 +73,10 @@ public final class ItemValidado {
         this.temNotaFiscal = temNotaFiscal;
         this.valorInformado = valorInformado;
         this.motivos = List.copyOf(Objects.requireNonNull(motivos, "motivos"));
+        this.moeda = moeda;
+        this.taxaCambioAplicada = taxaCambioAplicada;
+        this.dataCotacaoUtilizada = dataCotacaoUtilizada;
+        this.valorConvertidoBruto = valorConvertidoBruto;
     }
 
     public int getIndiceEntrada() {
@@ -91,6 +117,22 @@ public final class ItemValidado {
 
     public List<Motivo> getMotivos() {
         return motivos;
+    }
+
+    public String getMoeda() {
+        return moeda;
+    }
+
+    public BigDecimal getTaxaCambioAplicada() {
+        return taxaCambioAplicada;
+    }
+
+    public LocalDate getDataCotacaoUtilizada() {
+        return dataCotacaoUtilizada;
+    }
+
+    public BigDecimal getValorConvertidoBruto() {
+        return valorConvertidoBruto;
     }
 
     /**

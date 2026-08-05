@@ -686,7 +686,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
   - **Commit sugerido:** `feat(T-028): cria TabelaPoliticaResolvida`
   - **Status:** [x] concluída
 
-- [ ] **T-029** — Estender `ItemValidado` com campos de moeda e câmbio
+- [x] **T-029** — Estender `ItemValidado` com campos de moeda e câmbio
   - **O que faz:** `ItemValidado` ganha quatro campos novos (plan §4, §9): `moeda` (populado por `ValidadorItem`, T-036), `taxaCambioAplicada`, `dataCotacaoUtilizada`, `valorConvertidoBruto` (estes três, e só estes três, populados por `ResolutorCambio`, T-037). Para não quebrar `ValidadorItem` nem os ~20 arquivos de teste que hoje constroem `ItemValidado` pelo construtor de dez argumentos, o construtor **antigo é preservado** e passa a delegar para um construtor novo de catorze argumentos, assumindo `moeda = "BRL"`, `taxaCambioAplicada = BigDecimal.ONE`, `dataCotacaoUtilizada = null` e `valorConvertidoBruto = valor` (cópia do próprio parâmetro `valor` recebido) — exatamente o comportamento correto para um item BRL sem conversão (spec 4.3, "BRL: taxa 1, data nula"), então nenhum teste histórico muda de resultado.
   - **RN atendidas:** RN-002 (campo `moeda`), RN-020 (campos de câmbio).
   - **CA atendidos:** base estrutural para CA-034, CA-048.
@@ -707,7 +707,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
     mvn -q test
     ```
   - **Commit sugerido:** `feat(T-029): estende ItemValidado com campos de cambio preservando compatibilidade`
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 ---
 
