@@ -31,18 +31,23 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
- * Orquestra a CLI (spec §3, plan §3, DT-003, DT-010): interpreta {@code
- * calcular --input ... --output ...}, executa os onze passos do pipeline
- * (plan §2) na ordem canônica e escreve o resultado atomicamente. Não
- * implementa nenhuma regra de negócio — apenas encadeia os estágios já
- * prontos e traduz sucesso/falha em código de saída.
+ * Orquestra a CLI (spec §3, plan §3, DT-003, DT-010, DT-018): interpreta
+ * {@code calcular --input ... --output ... --politica ... --cambio ...},
+ * executa os estágios do pipeline (plan §2) na ordem canônica e escreve o
+ * resultado atomicamente. Não implementa nenhuma regra de negócio — apenas
+ * encadeia os estágios já prontos e traduz sucesso/falha em código de saída.
  */
 public final class Main {
 
-    private static final String USO = "Uso: java -jar motor-reembolso.jar calcular --input <arquivo> --output <arquivo>";
+    private static final String USO = "Uso: java -jar motor-reembolso.jar calcular --input <arquivo> --output <arquivo> --politica <arquivo> --cambio <arquivo>";
+
+    private static final Set<String> FLAGS_ACEITAS = Set.of("--input", "--output", "--politica", "--cambio");
 
     /**
      * Ponto de simulação de falha, exclusivo de teste, para exercitar a
@@ -64,39 +69,49 @@ public final class Main {
             return 2;
         }
 
-        String inputPath = null;
-        String outputPath = null;
-
-        for (int i = 1; i < args.length; i++) {
-            switch (args[i]) {
-                case "--input":
-                    if (i + 1 >= args.length) {
-                        err.println("Argumento obrigatório ausente: valor de --input");
-                        return 2;
-                    }
-                    inputPath = args[++i];
-                    break;
-                case "--output":
-                    if (i + 1 >= args.length) {
-                        err.println("Argumento obrigatório ausente: valor de --output");
-                        return 2;
-                    }
-                    outputPath = args[++i];
-                    break;
-                default:
-                    err.println("Argumento desconhecido: " + args[i]);
-                    return 2;
-            }
+        int restantes = args.length - 1;
+        if (restantes % 2 != 0) {
+            err.println("Quantidade inválida de argumentos: flags devem vir em pares flag valor");
+            return 2;
         }
 
-        if (inputPath == null) {
+        Map<String, String> opcoes = new LinkedHashMap<>();
+        for (int i = 1; i < args.length; i += 2) {
+            String flag = args[i];
+            String valor = args[i + 1];
+
+            if (!FLAGS_ACEITAS.contains(flag)) {
+                err.println("Argumento desconhecido: " + flag);
+                return 2;
+            }
+            if (opcoes.containsKey(flag)) {
+                err.println("Argumento repetido: " + flag);
+                return 2;
+            }
+            opcoes.put(flag, valor);
+        }
+
+        if (!opcoes.containsKey("--input")) {
             err.println("Argumento obrigatório ausente: --input");
             return 2;
         }
-        if (outputPath == null) {
+        if (!opcoes.containsKey("--output")) {
             err.println("Argumento obrigatório ausente: --output");
             return 2;
         }
+        if (!opcoes.containsKey("--politica")) {
+            err.println("Argumento obrigatório ausente: --politica");
+            return 2;
+        }
+        if (!opcoes.containsKey("--cambio")) {
+            err.println("Argumento obrigatório ausente: --cambio");
+            return 2;
+        }
+
+        String inputPath = opcoes.get("--input");
+        String outputPath = opcoes.get("--output");
+        String politicaPath = opcoes.get("--politica");
+        String cambioPath = opcoes.get("--cambio");
 
         Path input = Path.of(inputPath);
         if (!Files.isRegularFile(input)) {

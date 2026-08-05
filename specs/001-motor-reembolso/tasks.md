@@ -808,7 +808,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
 
 ### Bloco D — CLI de quatro flags
 
-- [ ] **T-034** — `Main.java`: parser de quatro flags
+- [x] **T-034** — `Main.java`: parser de quatro flags
   - **O que faz:** reescreve o parser de argumentos de `Main.run(...)` conforme `plan.md` §3/DT-018: primeiro token deve ser exatamente `"calcular"` (único posicional aceito); tokens restantes consumidos aos pares `flag valor`; pares acumulados num `Map<String, String>` contando ocorrências por chave; ao final, valida que as quatro chaves `--input`/`--output`/`--politica`/`--cambio` estão presentes, cada uma exatamente uma vez, e que nenhuma chave desconhecida apareceu. Qualquer violação → exit `2`. **Não** carrega `--politica`/`--cambio` ainda (isso é T-035) — nesta task, as duas flags só são reconhecidas e armazenadas. Como o contrato de execução muda de duas para quatro flags obrigatórias, **todo** consumidor histórico de `Main.run(...)` que pretende alcançar leitura, envelope, pipeline ou escrita — não só `CliContratoTest` — precisa passar a fornecer as quatro flags nesta mesma task, ou seu cenário passa a falhar no parser por um motivo alheio ao que o teste pretende verificar.
   - **RN atendidas:** RN-022 (parcial — contrato de execução).
   - **CA atendidos:** CA-041, CA-042.
@@ -837,7 +837,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
     mvn -q test
     ```
   - **Commit sugerido:** `feat(T-034): reescreve parser da CLI para quatro flags obrigatorias e migra consumidores historicos de Main.run`
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 - [ ] **T-035** — `Main.java`: carregar e validar política e câmbio antes do envelope
   - **O que faz:** `Main.run(...)` passa a chamar `LeitorPolitica.ler(politicaPath)` e `LeitorCambio.ler(cambioPath)` **antes** de ler e validar o envelope de despesas (spec 8.1, passo 1 antes do passo 2) — qualquer `PoliticaInvalidaException`/`CambioInvalidoException` retorna exit `2`, sem sequer abrir o arquivo de entrada. A própria construção dos `Path` (`Path.of(politicaPath)`, `Path.of(cambioPath)`, e também `Path.of(inputPath)`/`Path.of(outputPath)`) acontece **dentro** do mesmo bloco protegido — `Path.of(...)` pode lançar `InvalidPathException` quando o texto recebido não é um caminho válido no sistema operacional (ex.: caracteres proibidos no Windows), e esse cenário é tratado exatamente como as demais falhas de arquivo: exit `2`, mensagem apenas em stderr, stdout vazio, e um `--output` preexistente preservado intacto (nenhuma tentativa de escrita ocorre antes da validação de política/câmbio). Os objetos `PoliticaExterna`/`TabelaCambio` resultantes ainda não são usados pelo pipeline de regras nesta task (isso começa em T-038/T-042/T-046) — aqui o objetivo é só o contrato de execução (AMB-034) e a ordem de validação.

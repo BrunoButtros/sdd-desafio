@@ -31,6 +31,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class EscritaAtomicaSaidaTest {
 
     private static final String CONTEUDO_PREEXISTENTE = "{\"resultado\":\"antigo\"}";
+    private static final String POLITICA = Path.of("exemplos", "envelope", "politica-v4.json").toString();
+    private static final String CAMBIO = Path.of("exemplos", "envelope", "cambio.json").toString();
 
     @AfterEach
     void restaurarGatilhoDeFalha() {
@@ -94,7 +96,9 @@ class EscritaAtomicaSaidaTest {
         Path output = tempDir.resolve("resultado.json");
         escreverOutputPreexistente(output);
 
-        Resultado resultado = executar("calcular", "--input", input.toString(), "--output", output.toString());
+        Resultado resultado = executar(
+                "calcular", "--input", input.toString(), "--output", output.toString(),
+                "--politica", POLITICA, "--cambio", CAMBIO);
 
         assertEquals(2, resultado.codigo);
         assertEquals(CONTEUDO_PREEXISTENTE, Files.readString(output, StandardCharsets.UTF_8));
@@ -116,7 +120,9 @@ class EscritaAtomicaSaidaTest {
         Path output = tempDir.resolve("resultado.json");
         escreverOutputPreexistente(output);
 
-        Resultado resultado = executar("calcular", "--input", input.toString(), "--output", output.toString());
+        Resultado resultado = executar(
+                "calcular", "--input", input.toString(), "--output", output.toString(),
+                "--politica", POLITICA, "--cambio", CAMBIO);
 
         assertEquals(3, resultado.codigo);
         assertEquals(CONTEUDO_PREEXISTENTE, Files.readString(output, StandardCharsets.UTF_8));
@@ -134,7 +140,9 @@ class EscritaAtomicaSaidaTest {
         escreverOutputPreexistente(output);
 
         Main.simularFalhaAntesDaSubstituicao = true;
-        Resultado resultado = executar("calcular", "--input", input.toString(), "--output", output.toString());
+        Resultado resultado = executar(
+                "calcular", "--input", input.toString(), "--output", output.toString(),
+                "--politica", POLITICA, "--cambio", CAMBIO);
 
         assertEquals(2, resultado.codigo);
         assertEquals(CONTEUDO_PREEXISTENTE, Files.readString(output, StandardCharsets.UTF_8));
@@ -151,7 +159,9 @@ class EscritaAtomicaSaidaTest {
         Path output = tempDir.resolve("resultado.json");
         escreverOutputPreexistente(output);
 
-        Resultado resultado = executar("calcular", "--input", input.toString(), "--output", output.toString());
+        Resultado resultado = executar(
+                "calcular", "--input", input.toString(), "--output", output.toString(),
+                "--politica", POLITICA, "--cambio", CAMBIO);
 
         assertEquals(0, resultado.codigo);
         String conteudoFinal = Files.readString(output, StandardCharsets.UTF_8);
@@ -171,7 +181,9 @@ class EscritaAtomicaSaidaTest {
         Files.writeString(input, jsonEnvelopeValido(), StandardCharsets.UTF_8);
         Path output = tempDir.resolve("resultado-novo.json");
 
-        Resultado resultado = executar("calcular", "--input", input.toString(), "--output", output.toString());
+        Resultado resultado = executar(
+                "calcular", "--input", input.toString(), "--output", output.toString(),
+                "--politica", POLITICA, "--cambio", CAMBIO);
 
         assertEquals(0, resultado.codigo);
         assertTrue(Files.exists(output));

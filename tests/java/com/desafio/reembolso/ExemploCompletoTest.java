@@ -34,6 +34,8 @@ class ExemploCompletoTest {
 
     private static final Path ENTRADA = Path.of("exemplos", "despesas-exemplo.json");
     private static final Path FIXTURE = Path.of("tests", "resources", "fixtures", "despesas-exemplo-esperado.json");
+    private static final Path POLITICA = Path.of("exemplos", "envelope", "politica-v4.json");
+    private static final Path CAMBIO = Path.of("exemplos", "envelope", "cambio.json");
 
     @Test
     @DisplayName("processa o arquivo de exemplo e coincide estruturalmente com o fixture manual (14 registros, total 585,43)")
@@ -46,7 +48,12 @@ class ExemploCompletoTest {
         try (PrintStream out = new PrintStream(outBuffer, true, StandardCharsets.UTF_8);
              PrintStream err = new PrintStream(errBuffer, true, StandardCharsets.UTF_8)) {
             codigo = Main.run(
-                    new String[]{"calcular", "--input", ENTRADA.toString(), "--output", saida.toString()},
+                    new String[]{
+                            "calcular",
+                            "--input", ENTRADA.toString(),
+                            "--output", saida.toString(),
+                            "--politica", POLITICA.toString(),
+                            "--cambio", CAMBIO.toString()},
                     out, err);
             out.flush();
             err.flush();
