@@ -387,7 +387,7 @@ Vale para toda task deste arquivo, sem exceção:
   - **Commit:** `feat(T-016): compoe saida e ordena motivos com testes` (1 commit).
   - **Status:** [x] concluída
 
-- [ ] **T-017** — Total do período (RN-018)
+- [x] **T-017** — Total do período (RN-018)
   - **O que faz:** `total_reembolsavel` é exatamente a soma dos `valor_reembolsavel` apresentados nos registros de saída. Esta task também fecha, em nível de unidade, a parte de CA-017 que só faz sentido quando o total existe: um item recusado por `VALOR_NAO_POSITIVO` (T-008) não reduz o total do período.
   - **RN atendidas:** RN-018.
   - **CA atendidos:** CA-003; fecha, em unidade, a parte pendente de CA-017 (total não reduzido por valor não positivo) — a confirmação ponta a ponta dessa mesma parte de CA-017 acontece em T-020.
@@ -402,7 +402,7 @@ Vale para toda task deste arquivo, sem exceção:
     mvn test -Dtest=TotalPeriodoTest
     ```
   - **Commit:** `feat(T-017): calcula total reembolsavel com testes` (1 commit).
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 ---
 
