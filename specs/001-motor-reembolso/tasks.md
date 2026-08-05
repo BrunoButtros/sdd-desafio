@@ -575,7 +575,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
   - **Commit sugerido:** `feat(T-024): estende RegraNegocio com RN-019 a RN-022`
   - **Status:** [x] concluída
 
-- [ ] **T-025** — Criar `Periodicidade` e `TabelaCategoria`
+- [x] **T-025** — Criar `Periodicidade` e `TabelaCategoria`
   - **O que faz:** cria o enum fechado `Periodicidade` (`DIA`, `DIARIA` — AMB-036) e a estrutura imutável `TabelaCategoria` (`limite: BigDecimal`, `periodicidade: Periodicidade`), que representa uma categoria dentro de uma tabela de política (`padrao` ou de um centro de custo). Agrupadas na mesma task por serem pequenas e fortemente acopladas: `TabelaCategoria` não existe sem `Periodicidade`.
   - **RN atendidas:** RN-019.
   - **CA atendidos:** base estrutural para CA-024 a CA-027, CA-045, CA-047, CA-049.
@@ -606,7 +606,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
     mvn -q test -Dtest=TabelaCategoriaTest
     ```
   - **Commit sugerido:** `feat(T-025): cria Periodicidade e TabelaCategoria`
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 - [ ] **T-026** — Criar `PoliticaExterna`
   - **O que faz:** cria a estrutura imutável `PoliticaExterna` (`vigencia: LocalDate`, `moedaBase: String`, `notaFiscalObrigatoriaAcimaDe: BigDecimal`, `padrao: Map<String, TabelaCategoria>`, `centrosCusto: Map<String, Map<String, TabelaCategoria>>`), construída sempre com cópias defensivas imutáveis dos dois mapas (`Map.copyOf`). Nesta task o modelo é só a estrutura de dados — a leitura e validação a partir de `politica.json` é `LeitorPolitica` (T-030).
