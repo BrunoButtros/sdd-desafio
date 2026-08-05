@@ -425,7 +425,7 @@ Vale para toda task deste arquivo, sem exceção:
   - **Commit:** `feat(T-018): serializa resultado monetario conforme a spec` (1 commit).
   - **Status:** [x] concluída
 
-- [ ] **T-019** — Conclusão da CLI: escrita atômica do destino e contrato final (DT-010)
+- [x] **T-019** — Conclusão da CLI: escrita atômica do destino e contrato final (DT-010)
   - **O que faz:** fecha o contrato de execução por completo. O resultado é serializado para um arquivo temporário no mesmo diretório do destino e só então movido/substituído atomicamente (`Files.move` com `ATOMIC_MOVE` + `REPLACE_EXISTING`) sobre `--output`; qualquer falha nos códigos `2` ou `3` preserva um `--output` preexistente intacto; sucesso (exit `0`) substitui o destino pelo resultado completo.
   - **Requisitos atendidos:** nenhuma RN/CA nova isoladamente.
   - **DT/seções do plan:** DT-003 (fechamento — os três exit codes `0`/`2`/`3` verificados juntos pela primeira vez), DT-010.
@@ -443,7 +443,7 @@ Vale para toda task deste arquivo, sem exceção:
     mvn test "-Dtest=EscritaAtomicaSaidaTest,CliContratoTest"
     ```
   - **Commit:** `feat(T-019): conclui CLI com escrita atomica e testes de contrato` (1 commit).
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 - [ ] **T-020** — Teste de integração completo (14 itens, total R$ 585,43)
   - **O que faz:** executa o pipeline inteiro, de ponta a ponta, contra `exemplos/despesas-exemplo.json`, comparando o resultado **estruturalmente** (JSON contra JSON, campo a campo — nunca comparação textual) contra um fixture de saída esperada.

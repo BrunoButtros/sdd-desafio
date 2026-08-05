@@ -1,11 +1,14 @@
 package com.desafio.reembolso;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -15,11 +18,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Cobre o contrato básico de CLI da T-002 e a parte de DT-003 referente ao
- * código de saída 2 (erro de uso ou de infraestrutura). Não atribui RN ou CA,
- * porque nenhum existe para contrato de execução nesta etapa.
+ * Cobre o contrato de CLI (T-002, T-019) e DT-003 — os três códigos de saída
+ * (0, 2 e 3) num único comando {@code mvn test}. Não atribui RN ou CA, porque
+ * nenhum existe para contrato de execução.
  */
-@DisplayName("Contrato de CLI — T-002 / DT-003 (parcial, exit 2)")
+@DisplayName("Contrato de CLI — T-002 / T-019 / DT-003")
 class CliContratoTest {
 
     private static final class Resultado {
@@ -121,5 +124,29 @@ class CliContratoTest {
                 "stderr deveria conter 'JSON de entrada sintaticamente inválido', mas foi: " + resultado.stderr);
         assertEquals("", resultado.stdout);
         assertFalse(Files.exists(output), "--output não deve ser criado quando há tokens extras após a raiz JSON");
+    }
+
+    @Test
+    @DisplayName("processamento com sucesso retorna exit 0, escreve o resultado e não escreve em stderr/stdout")
+    void sucesso_exit0EArquivoEscrito(@TempDir Path tempDir) throws Exception {
+        Path input = tempDir.resolve("entrada.json");
+        Files.writeString(input, """
+                {
+                  "periodo": { "inicio": "2026-07-01", "fim": "2026-07-31" },
+                  "despesas": []
+                }
+                """, StandardCharsets.UTF_8);
+        Path output = tempDir.resolve("resultado.json");
+
+        Resultado resultado = executar("calcular", "--input", input.toString(), "--output", output.toString());
+
+        assertEquals(0, resultado.codigo);
+        assertEquals("", resultado.stderr);
+        assertEquals("", resultado.stdout);
+        assertTrue(Files.exists(output), "--output deve ser criado em caso de sucesso");
+
+        JsonNode raiz = new ObjectMapper().readTree(output.toFile());
+        assertTrue(raiz.has("total_reembolsavel"), "JSON de saída deve ser parseável e conter total_reembolsavel");
+        assertEquals(0, new BigDecimal("0.00").compareTo(raiz.get("total_reembolsavel").decimalValue()));
     }
 }
