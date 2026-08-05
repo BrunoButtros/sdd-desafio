@@ -509,7 +509,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
 
 ### Bloco A — Modelos e vocabulários fundamentais
 
-- [ ] **T-022** — Estender `CampoCanonico` com `MOEDA`
+- [x] **T-022** — Estender `CampoCanonico` com `MOEDA`
   - **O que faz:** acrescenta o valor `MOEDA` ao vocabulário fechado de campos canônicos, serializando para `"despesa.moeda"` (mesmo mecanismo de `textoCanonico()` já existente — nome do enum em minúsculo, prefixado por `despesa.`). No **mesmo commit**, `CompositorSaida.criarOrdemCampo()` é atualizado para reconhecer o valor novo — nunca se deixa um intervalo entre "o enum existe" e "o compositor sabe ordená-lo", porque a partir de T-036 um motivo estrutural com `campo = CampoCanonico.MOEDA` já pode chegar ao pipeline, e `ordemCampo(...)` lançaria `IllegalArgumentException` ("campo fora do vocabulário fechado de precedência") sobre um motivo perfeitamente válido se o mapa não reconhecesse `MOEDA` desde já.
   - **RN atendidas:** RN-002 (7º campo do contrato).
   - **CA atendidos:** base para CA-048 (fechado em T-036).
@@ -530,7 +530,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
     mvn -q test "-Dtest=VocabularioMotivoTest,OrdemMotivosTest"
     ```
   - **Commit sugerido:** `feat(T-022): estende CampoCanonico com despesa.moeda e atualiza ordem de campo no CompositorSaida`
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 - [ ] **T-023** — Estender `MotivoCodigo` com os três códigos novos
   - **O que faz:** acrescenta `MOEDA_SEM_COTACAO`, `CATEGORIA_NAO_REEMBOLSAVEL_CENTRO_CUSTO` e `TETO_INDIVIDUAL_APLICADO` ao vocabulário fechado de códigos de motivo (spec 4.5), cada um serializando para o próprio nome do enum (mesmo mecanismo já existente). No **mesmo commit**, `CompositorSaida.criarEstagios()` é atualizado para reconhecer os três códigos — não se pode esperar até T-048, porque `MOEDA_SEM_COTACAO` já é produzido em T-037 e integrado ao pipeline em T-038, `CATEGORIA_NAO_REEMBOLSAVEL_CENTRO_CUSTO` já é produzido em T-041 e integrado em T-042, e `TETO_INDIVIDUAL_APLICADO` já é produzido em T-044 e integrado em T-046 — todos antes de T-048. Sem esta atualização imediata, um motivo válido produzido por qualquer uma dessas tasks faria `CompositorSaida.estagioDe(...)` lançar `IllegalArgumentException` ("código de motivo fora do vocabulário fechado de precedência").

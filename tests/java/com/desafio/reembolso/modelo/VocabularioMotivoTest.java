@@ -76,6 +76,7 @@ class VocabularioMotivoTest {
             "DESCRICAO, descricao",
             "FORNECEDOR, fornecedor",
             "VALOR, valor",
+            "MOEDA, moeda",
             "TEM_NOTA_FISCAL, tem_nota_fiscal",
     })
     @DisplayName("Spec 4.2 — CampoCanonico serializa como despesa.<campo>")
@@ -84,9 +85,9 @@ class VocabularioMotivoTest {
     }
 
     @Test
-    @DisplayName("CampoCanonico cobre exatamente os sete campos de 4.2")
-    void campoCanonicoTemSeteValores() {
-        assertEquals(7, CampoCanonico.values().length);
+    @DisplayName("CampoCanonico cobre exatamente os oito campos de 4.2 (T-022: acrescenta despesa.moeda)")
+    void campoCanonicoTemOitoValores() {
+        assertEquals(8, CampoCanonico.values().length);
     }
 
     @ParameterizedTest(name = "Decisao.{0} serializa para \"{1}\"")

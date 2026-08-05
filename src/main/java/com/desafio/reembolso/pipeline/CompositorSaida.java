@@ -266,7 +266,8 @@ public final class CompositorSaida {
         mapa.put(CampoCanonico.DESCRICAO, 3);
         mapa.put(CampoCanonico.FORNECEDOR, 4);
         mapa.put(CampoCanonico.VALOR, 5);
-        mapa.put(CampoCanonico.TEM_NOTA_FISCAL, 6);
+        mapa.put(CampoCanonico.MOEDA, 6);
+        mapa.put(CampoCanonico.TEM_NOTA_FISCAL, 7);
         return Collections.unmodifiableMap(mapa);
     }
 

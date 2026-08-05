@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Locale;
 
 /**
- * Vocabulário fechado dos sete campos canônicos de {@code despesa} (spec 4.2),
+ * Vocabulário fechado dos oito campos canônicos de {@code despesa} (spec 4.2),
  * cada valor serializando para o texto canônico {@code "despesa.<campo>"}.
  */
 public enum CampoCanonico {
@@ -15,6 +15,7 @@ public enum CampoCanonico {
     DESCRICAO,
     FORNECEDOR,
     VALOR,
+    MOEDA,
     TEM_NOTA_FISCAL;
 
     @JsonValue
