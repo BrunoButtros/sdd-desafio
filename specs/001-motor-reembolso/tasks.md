@@ -555,7 +555,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
   - **Commit sugerido:** `feat(T-023): estende MotivoCodigo com os tres codigos da politica v4 e atualiza estagios do CompositorSaida`
   - **Status:** [x] concluída
 
-- [ ] **T-024** — Estender `RegraNegocio` com RN-019 a RN-022
+- [x] **T-024** — Estender `RegraNegocio` com RN-019 a RN-022
   - **O que faz:** acrescenta `RN_019`, `RN_020`, `RN_021`, `RN_022` ao vocabulário fechado de regras, cada uma serializando para `"RN-NNN"` (mesmo mecanismo já existente: `name().replace('_', '-')`).
   - **RN atendidas:** RN-019 a RN-022 (o próprio vocabulário que as representa).
   - **CA atendidos:** base para todos os CA do Dia 2 que citam essas RN em `motivo.regra`.
@@ -573,7 +573,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
     mvn -q test -Dtest=VocabularioMotivoTest
     ```
   - **Commit sugerido:** `feat(T-024): estende RegraNegocio com RN-019 a RN-022`
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 - [ ] **T-025** — Criar `Periodicidade` e `TabelaCategoria`
   - **O que faz:** cria o enum fechado `Periodicidade` (`DIA`, `DIARIA` — AMB-036) e a estrutura imutável `TabelaCategoria` (`limite: BigDecimal`, `periodicidade: Periodicidade`), que representa uma categoria dentro de uma tabela de política (`padrao` ou de um centro de custo). Agrupadas na mesma task por serem pequenas e fortemente acopladas: `TabelaCategoria` não existe sem `Periodicidade`.

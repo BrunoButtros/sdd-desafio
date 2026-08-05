@@ -58,6 +58,7 @@ class VocabularioMotivoTest {
     @CsvSource({
             "001", "002", "003", "004", "005", "006", "007", "008", "009",
             "010", "011", "012", "013", "014", "015", "016", "017", "018",
+            "019", "020", "021", "022",
     })
     @DisplayName("Plan §4/DT-008 — RegraNegocio serializa como RN-NNN")
     void regraNegocioSerializaComoRnNnn(String numero) throws Exception {
@@ -66,9 +67,9 @@ class VocabularioMotivoTest {
     }
 
     @Test
-    @DisplayName("RegraNegocio cobre exatamente RN-001 a RN-018")
-    void regraNegocioTemDezoitoValores() {
-        assertEquals(18, RegraNegocio.values().length);
+    @DisplayName("RegraNegocio cobre exatamente RN-001 a RN-022 (T-024: acrescenta os quatro da politica v4)")
+    void regraNegocioTemVinteEDoisValores() {
+        assertEquals(22, RegraNegocio.values().length);
     }
 
     @ParameterizedTest(name = "CampoCanonico.{0} serializa para \"despesa.{1}\"")
