@@ -1,0 +1,23 @@
+{
+  "vigencia": "2026-08-01",
+  "moeda_base": "BRL",
+  "nota_fiscal_obrigatoria_acima_de": 100.00,
+  "versao": "v4-teste",
+  "acrescimo_em_viagem_percentual": 50,
+  "padrao": {
+    "alimentacao": { "limite": 60.00, "periodicidade": "dia", "observacao": "teto diario" },
+    "transporte_urbano": { "limite": 80.00, "periodicidade": "dia" },
+    "hospedagem": { "limite": 250.00, "periodicidade": "diaria" }
+  },
+  "centros_custo": {
+    "CC-ENG-PLATAFORMA": {
+      "alimentacao": { "limite": 60.00, "periodicidade": "dia" },
+      "transporte_urbano": { "limite": 80.00, "periodicidade": "dia" },
+      "hospedagem": { "limite": 250.00, "periodicidade": "diaria" },
+      "estacionamento": { "limite": 40.00, "periodicidade": "diaria" }
+    },
+    "CC-COMERCIAL": {
+      "alimentacao": { "limite": 0.00, "periodicidade": "dia" }
+    }
+  }
+}

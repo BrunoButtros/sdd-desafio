@@ -713,7 +713,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
 
 ### Bloco B — Leitor de política externa
 
-- [ ] **T-030** — Implementar `LeitorPolitica.ler(Path)`
+- [x] **T-030** — Implementar `LeitorPolitica.ler(Path)`
   - **O que faz:** lê e valida integralmente `politica.json` (spec 4.1.1, RN-021, RN-022, AMB-035), aplicando as dezesseis validações estruturais de `plan.md` §5 antes de construir qualquer `TabelaCategoria`. Sucesso devolve `PoliticaExterna`; qualquer falha (arquivo inexistente, ilegível, JSON sintaticamente inválido, ou violação de qualquer uma das dezesseis regras) lança `PoliticaInvalidaException` — classe estática aninhada em `LeitorPolitica`, no mesmo padrão já usado por `ValidadorEnvelope.EnvelopeInvalidoException` (respondendo à pergunta de `CLAUDE.md`: o padrão atual do projeto já é o de exceção aninhada com `codigoSaida()`, então `PoliticaInvalidaException` segue esse mesmo molde, com `CODIGO_SAIDA = 2`).
   - **RN atendidas:** RN-021, RN-022.
   - **CA atendidos:** CA-035 (parcial — vigência), CA-036 (parcial — política), CA-045.
@@ -735,7 +735,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
     mvn -q test -Dtest=LeitorPoliticaTest
     ```
   - **Commit sugerido:** `feat(T-030): implementa LeitorPolitica com validacao estrutural completa`
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 - [ ] **T-031** — Testes de fronteira do `LeitorPolitica`
   - **O que faz:** amplia exaustivamente a matriz de testes de fronteira sobre comportamentos que `LeitorPolitica` (T-030) **já implementa integralmente** — `limite: 0` em `padrao` (inválido, arquivo inteiro rejeitado) versus `limite: 0` numa tabela de `centros_custo` (estruturalmente válido, produz `TabelaCategoria` com `limite = 0.00`); campo desconhecido dentro de uma configuração de categoria; e a garantia de imutabilidade/isolamento de `PoliticaExterna` a partir do `JsonNode`/mapas mutáveis intermediários do leitor (ponto 16 de `plan.md` §5). Esta task **não** introduz nenhuma validação normativa pela primeira vez — a validação de `observacao` e os demais quinze pontos de `plan.md` §5 já estão fechados desde T-030; aqui só se comprova exaustivamente esse comportamento já existente, sob mais combinações de entrada.
