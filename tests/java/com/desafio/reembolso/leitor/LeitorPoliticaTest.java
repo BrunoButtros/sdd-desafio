@@ -414,4 +414,74 @@ class LeitorPoliticaTest {
         assertEquals(1, comercial.size());
         assertTabelaCategoria("0.00", Periodicidade.DIA, comercial.get("alimentacao"));
     }
+
+    // ---- T-031: limite zero em centros_custo e imutabilidade --------------
+
+    @Test
+    @DisplayName("limite zero em centros_custo é aceito e produz TabelaCategoria com limite 0.00")
+    void limiteZeroEmCentroCustoValido() throws IOException {
+        Path arquivo = escrever(documentoComCentrosCusto(
+                "{ \"CENTRO\": { \"categoria\": { \"limite\": 0, \"periodicidade\": \"dia\" } } }"));
+
+        PoliticaExterna politica = LeitorPolitica.ler(arquivo);
+
+        assertEquals(0, BigDecimal.ZERO.compareTo(
+                politica.getCentrosCusto().get("CENTRO").get("categoria").limite()));
+    }
+
+    @Test
+    @DisplayName("padrao retornado por uma política lida de arquivo é imutável")
+    void padraoRetornadoEImutavel() throws IOException {
+        Path arquivo = escrever(documentoComConfigCategoriaPadrao(
+                "{ \"limite\": 60.00, \"periodicidade\": \"dia\" }"));
+
+        PoliticaExterna politica = LeitorPolitica.ler(arquivo);
+        Map<String, TabelaCategoria> padrao = politica.getPadrao();
+
+        assertThrows(UnsupportedOperationException.class,
+                () -> padrao.put("nova", new TabelaCategoria(BigDecimal.TEN, Periodicidade.DIA)));
+    }
+
+    @Test
+    @DisplayName("mapa externo de centrosCusto retornado é imutável")
+    void mapaExternoDeCentrosCustoEImutavel() throws IOException {
+        Path arquivo = escrever(documentoComCentrosCusto(
+                "{ \"CENTRO\": { \"categoria\": { \"limite\": 60.00, \"periodicidade\": \"dia\" } } }"));
+
+        PoliticaExterna politica = LeitorPolitica.ler(arquivo);
+        Map<String, Map<String, TabelaCategoria>> centrosCusto = politica.getCentrosCusto();
+
+        assertThrows(UnsupportedOperationException.class,
+                () -> centrosCusto.put("OUTRO", Map.of()));
+    }
+
+    @Test
+    @DisplayName("mapa interno de categorias de um centro de custo é imutável")
+    void mapaInternoDeCategoriasDoCentroCustoEImutavel() throws IOException {
+        Path arquivo = escrever(documentoComCentrosCusto(
+                "{ \"CENTRO\": { \"categoria\": { \"limite\": 60.00, \"periodicidade\": \"dia\" } } }"));
+
+        PoliticaExterna politica = LeitorPolitica.ler(arquivo);
+        Map<String, TabelaCategoria> categoriasDoCentro = politica.getCentrosCusto().get("CENTRO");
+
+        assertThrows(UnsupportedOperationException.class,
+                () -> categoriasDoCentro.put("nova", new TabelaCategoria(BigDecimal.TEN, Periodicidade.DIA)));
+    }
+
+    @Test
+    @DisplayName("nenhuma alteração feita nos mapas obtidos pelos getters consegue modificar o modelo")
+    void alteracaoViaGettersNaoModificaOModelo() throws IOException {
+        Path arquivo = escrever(documentoComCentrosCusto(
+                "{ \"CENTRO\": { \"categoria\": { \"limite\": 60.00, \"periodicidade\": \"dia\" } } }"));
+
+        PoliticaExterna politica = LeitorPolitica.ler(arquivo);
+
+        assertThrows(UnsupportedOperationException.class, () -> politica.getPadrao().clear());
+        assertThrows(UnsupportedOperationException.class, () -> politica.getCentrosCusto().clear());
+        assertThrows(UnsupportedOperationException.class,
+                () -> politica.getCentrosCusto().get("CENTRO").clear());
+
+        assertTabelaCategoria("60.00", Periodicidade.DIA,
+                politica.getCentrosCusto().get("CENTRO").get("categoria"));
+    }
 }

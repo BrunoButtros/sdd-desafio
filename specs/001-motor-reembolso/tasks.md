@@ -737,7 +737,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
   - **Commit sugerido:** `feat(T-030): implementa LeitorPolitica com validacao estrutural completa`
   - **Status:** [x] concluída
 
-- [ ] **T-031** — Testes de fronteira do `LeitorPolitica`
+- [x] **T-031** — Testes de fronteira do `LeitorPolitica`
   - **O que faz:** amplia exaustivamente a matriz de testes de fronteira sobre comportamentos que `LeitorPolitica` (T-030) **já implementa integralmente** — `limite: 0` em `padrao` (inválido, arquivo inteiro rejeitado) versus `limite: 0` numa tabela de `centros_custo` (estruturalmente válido, produz `TabelaCategoria` com `limite = 0.00`); campo desconhecido dentro de uma configuração de categoria; e a garantia de imutabilidade/isolamento de `PoliticaExterna` a partir do `JsonNode`/mapas mutáveis intermediários do leitor (ponto 16 de `plan.md` §5). Esta task **não** introduz nenhuma validação normativa pela primeira vez — a validação de `observacao` e os demais quinze pontos de `plan.md` §5 já estão fechados desde T-030; aqui só se comprova exaustivamente esse comportamento já existente, sob mais combinações de entrada.
   - **RN atendidas:** RN-019, RN-022.
   - **CA atendidos:** CA-045.
@@ -754,7 +754,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
     mvn -q test -Dtest=LeitorPoliticaTest
     ```
   - **Commit sugerido:** `test(T-031): cobre limites, campos desconhecidos e imutabilidade do LeitorPolitica`
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 ---
 
