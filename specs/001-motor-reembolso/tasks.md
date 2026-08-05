@@ -608,7 +608,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
   - **Commit sugerido:** `feat(T-025): cria Periodicidade e TabelaCategoria`
   - **Status:** [x] concluída
 
-- [ ] **T-026** — Criar `PoliticaExterna`
+- [x] **T-026** — Criar `PoliticaExterna`
   - **O que faz:** cria a estrutura imutável `PoliticaExterna` (`vigencia: LocalDate`, `moedaBase: String`, `notaFiscalObrigatoriaAcimaDe: BigDecimal`, `padrao: Map<String, TabelaCategoria>`, `centrosCusto: Map<String, Map<String, TabelaCategoria>>`), construída sempre com cópias defensivas imutáveis dos dois mapas (`Map.copyOf`). Nesta task o modelo é só a estrutura de dados — a leitura e validação a partir de `politica.json` é `LeitorPolitica` (T-030).
   - **RN atendidas:** RN-019, RN-021.
   - **CA atendidos:** base estrutural para CA-024 a CA-027, CA-035, CA-045.
@@ -627,7 +627,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
     mvn -q test -Dtest=PoliticaExternaTest
     ```
   - **Commit sugerido:** `feat(T-026): cria modelo imutavel PoliticaExterna`
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 - [ ] **T-027** — Criar `TabelaCambio`
   - **O que faz:** cria a estrutura imutável `TabelaCambio` (`moedaBase: String`, `cotacoesPorMoeda: Map<String, NavigableMap<LocalDate, BigDecimal>>`), já na forma invertida de consulta eficiente (moeda → data → taxa, DT-013), com uma API de consulta fechada que devolve, num único objeto, a data da cotação efetivamente usada **e** a taxa correspondente — nunca a taxa isolada, porque `data_cotacao_utilizada` (spec 4.3) é campo de auditoria própria e não pode ser recalculada fora do ponto de consulta que já sabe qual entrada foi usada. Nesta task o modelo é só a estrutura — a leitura/inversão a partir de `cambio.json` é `LeitorCambio` (T-032).
