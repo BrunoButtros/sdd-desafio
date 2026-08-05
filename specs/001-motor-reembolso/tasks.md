@@ -366,7 +366,7 @@ Vale para toda task deste arquivo, sem exceção:
 
 ## Fase 5 — Composição da saída e total
 
-- [ ] **T-016** — Composição da saída e ordenação de motivos (RN-017)
+- [x] **T-016** — Composição da saída e ordenação de motivos (RN-017)
   - **O que faz:** toda posição da lista `despesas` produz exatamente um registro de saída, na ordem da entrada, com decisão final e motivos ordenados conforme 8.3 (não conforme a ordem em que foram detectados no pipeline), respeitando as exclusões fechadas de 8.4.
   - **RN atendidas:** RN-017.
   - **CA atendidos:** CA-002.
@@ -385,7 +385,7 @@ Vale para toda task deste arquivo, sem exceção:
     mvn test "-Dtest=ComposicaoSaidaTest,OrdemMotivosTest"
     ```
   - **Commit:** `feat(T-016): compoe saida e ordena motivos com testes` (1 commit).
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 - [ ] **T-017** — Total do período (RN-018)
   - **O que faz:** `total_reembolsavel` é exatamente a soma dos `valor_reembolsavel` apresentados nos registros de saída. Esta task também fecha, em nível de unidade, a parte de CA-017 que só faz sentido quando o total existe: um item recusado por `VALOR_NAO_POSITIVO` (T-008) não reduz o total do período.
