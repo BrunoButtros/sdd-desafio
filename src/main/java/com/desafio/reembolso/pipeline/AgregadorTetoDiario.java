@@ -3,8 +3,11 @@ package com.desafio.reembolso.pipeline;
 import com.desafio.reembolso.modelo.Decisao;
 import com.desafio.reembolso.modelo.ItemValidado.Motivo;
 import com.desafio.reembolso.modelo.MotivoCodigo;
+import com.desafio.reembolso.modelo.Periodicidade;
 import com.desafio.reembolso.modelo.PoliticaReembolso;
 import com.desafio.reembolso.modelo.RegraNegocio;
+import com.desafio.reembolso.modelo.TabelaCategoria;
+import com.desafio.reembolso.modelo.TabelaPoliticaResolvida;
 import com.desafio.reembolso.pipeline.AvaliadorRegrasIndividuais.ItemAvaliado;
 
 import java.math.BigDecimal;
@@ -37,6 +40,8 @@ public final class AgregadorTetoDiario {
             new Motivo(MotivoCodigo.TETO_DIARIO_APLICADO, RegraNegocio.RN_012, null);
     private static final Motivo MOTIVO_ESGOTADO =
             new Motivo(MotivoCodigo.TETO_DIARIO_ESGOTADO, RegraNegocio.RN_015, null);
+    private static final Motivo MOTIVO_TETO_RN019 =
+            new Motivo(MotivoCodigo.TETO_DIARIO_APLICADO, RegraNegocio.RN_019, null);
 
     private static final AgregadorTetoDiario PADRAO =
             new AgregadorTetoDiario(PoliticaReembolso.padrao());
@@ -49,6 +54,77 @@ public final class AgregadorTetoDiario {
 
     public static List<ResultadoTeto> aplicar(List<ItemAvaliado> itens) {
         return PADRAO.aplicarInterno(itens);
+    }
+
+    /**
+     * Sobrecarga por política externa (RN-011, RN-012, RN-015, RN-019;
+     * DT-017): participa quem tem {@code periodicidade == DIA} na tabela
+     * resolvida, nunca pelo nome da categoria — {@link #CATEGORIAS_TETO_DIARIO}
+     * e {@link PoliticaReembolso} não são consultados aqui.
+     */
+    public static List<ResultadoTeto> aplicar(List<ItemAvaliado> itens, TabelaPoliticaResolvida tabela) {
+        Objects.requireNonNull(itens, "itens");
+        Objects.requireNonNull(tabela, "tabela");
+
+        List<ItemAvaliado> aplicaveis = new ArrayList<>();
+        Map<ItemAvaliado, TabelaCategoria> configuracoesPorItem = new IdentityHashMap<>();
+        for (ItemAvaliado item : itens) {
+            if (!item.elegivel()) {
+                continue;
+            }
+            String categoria = item.itemNormalizado().categoriaNormalizada();
+            if (categoria == null) {
+                continue;
+            }
+            TabelaCategoria configuracao = tabela.getCategorias().get(categoria);
+            if (configuracao != null && configuracao.periodicidade() == Periodicidade.DIA) {
+                aplicaveis.add(item);
+                configuracoesPorItem.put(item, configuracao);
+            }
+        }
+
+        List<ItemAvaliado> ordenadosPorIndice = new ArrayList<>(aplicaveis);
+        ordenadosPorIndice.sort(Comparator.comparingInt(i -> i.itemNormalizado().item().getIndiceEntrada()));
+
+        Map<ChaveTetoDiario, BigDecimal> saldos = new HashMap<>();
+        Map<ItemAvaliado, ResultadoTeto> resultadosPorItem = new IdentityHashMap<>();
+
+        for (ItemAvaliado item : ordenadosPorIndice) {
+            String categoria = item.itemNormalizado().categoriaNormalizada();
+            ChaveTetoDiario chave = chaveDe(item);
+            TabelaCategoria configuracao = configuracoesPorItem.get(item);
+            BigDecimal saldo = saldos.computeIfAbsent(chave, k -> configuracao.limite());
+
+            if (saldo.compareTo(BigDecimal.ZERO) == 0) {
+                resultadosPorItem.put(item,
+                        new ResultadoTeto(item, ZERO_ESCALA_2, Decisao.NAO_REEMBOLSADO_TETO_ESGOTADO, List.of(MOTIVO_ESGOTADO)));
+                continue;
+            }
+
+            Motivo motivoAplicado = motivoTetoDiarioAplicado(categoria);
+            ResultadoTeto resultado = aplicarCorte(item, saldo, motivoAplicado);
+            resultadosPorItem.put(item, resultado);
+
+            saldos.put(chave, resultado.decisao() == Decisao.INTEGRALMENTE_REEMBOLSADO
+                    ? saldo.subtract(resultado.valorReembolsavel())
+                    : ZERO_ESCALA_2);
+        }
+
+        List<ResultadoTeto> resultado = new ArrayList<>(aplicaveis.size());
+        for (ItemAvaliado item : aplicaveis) {
+            resultado.add(resultadosPorItem.get(item));
+        }
+        return List.copyOf(resultado);
+    }
+
+    private static Motivo motivoTetoDiarioAplicado(String categoria) {
+        if ("alimentacao".equals(categoria)) {
+            return MOTIVO_TETO_ALIMENTACAO;
+        }
+        if ("transporte_urbano".equals(categoria)) {
+            return MOTIVO_TETO_TRANSPORTE;
+        }
+        return MOTIVO_TETO_RN019;
     }
 
     private List<ResultadoTeto> aplicarInterno(List<ItemAvaliado> itens) {

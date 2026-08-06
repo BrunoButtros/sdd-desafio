@@ -1061,7 +1061,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
 
 ### Bloco H — Periodicidade e tetos
 
-- [ ] **T-043** — Generalizar `AgregadorTetoDiario` por periodicidade
+- [x] **T-043** — Generalizar `AgregadorTetoDiario` por periodicidade
   - **O que faz:** acrescenta a `AgregadorTetoDiario` uma nova sobrecarga que recebe, por item, a `TabelaPoliticaResolvida` aplicável, e decide participação no teto compartilhado consultando `periodicidade == DIA` na categoria resolvida — não mais o `Set<String> CATEGORIAS_TETO_DIARIO` fixo (DT-017). O motivo `TETO_DIARIO_APLICADO` carrega `RN_011` para `alimentacao`, `RN_012` para `transporte_urbano`, `RN_019` para qualquer outra categoria (pequena tabela de exceção por nome, dentro do agregador — não contradiz a generalização do mecanismo). A sobrecarga antiga (`Set` fixo + `PoliticaReembolso`) permanece intacta para a suíte histórica.
   - **RN atendidas:** RN-011, RN-012, RN-015, RN-019.
   - **CA atendidos:** CA-047 (parcial — mecanismo compartilhado).
@@ -1082,7 +1082,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
     mvn -q test -Dtest=TetoPorPeriodicidadeTest
     ```
   - **Commit sugerido:** `feat(T-043): generaliza AgregadorTetoDiario por periodicidade`
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 - [ ] **T-044** — Criar `AgregadorTetoIndividual`
   - **O que faz:** cria `pipeline/AgregadorTetoIndividual.java`, que processa qualquer categoria com `periodicidade == DIARIA` na tabela resolvida (não só `hospedagem`): teto individual por lançamento, sem saldo compartilhado, reaproveitando `AgregadorTetoDiario.aplicarCorte(...)`. `hospedagem` produz `TETO_HOSPEDAGEM_APLICADO`/`RN_013`; qualquer outra categoria produz `TETO_INDIVIDUAL_APLICADO`/`RN_019` (AMB-037). `AgregadorTetoHospedagem.java` **não é removido** nesta task — continua existindo e sendo usado pela suíte histórica até T-055/T-056.
