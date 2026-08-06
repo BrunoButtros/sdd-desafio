@@ -8,6 +8,7 @@ import com.desafio.reembolso.modelo.ItemValidado;
 import com.desafio.reembolso.modelo.ItemValidado.Motivo;
 import com.desafio.reembolso.modelo.MotivoCodigo;
 import com.desafio.reembolso.modelo.RegraNegocio;
+import com.desafio.reembolso.modelo.TabelaCambio;
 import com.desafio.reembolso.pipeline.AgregadorTetoDiario.ResultadoTeto;
 import com.desafio.reembolso.pipeline.AvaliadorRegrasIndividuais.ItemAvaliado;
 import com.desafio.reembolso.pipeline.CompositorSaida.ResultadoItem;
@@ -22,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -50,11 +52,15 @@ class OrdemMotivosTest {
     }
 
     private static List<ResultadoItem> pipelineCompleto(String json) {
+        return pipelineCompleto(json, CambioTesteSupport.TABELA_BRL);
+    }
+
+    private static List<ResultadoItem> pipelineCompleto(String json, TabelaCambio cambio) {
         Envelope envelope = ValidadorEnvelope.validar(raiz(json));
 
         List<ItemValidado> validados = ValidadorItem.validarLista(envelope.getDespesas());
         List<ItemValidado> idsVerificados = DetectorIdDuplicado.detectar(validados);
-        List<ItemValidado> comCambio = CambioTesteSupport.resolverLista(idsVerificados);
+        List<ItemValidado> comCambio = CambioTesteSupport.resolverLista(idsVerificados, cambio);
         List<ItemNormalizado> normalizados = Normalizador.normalizarLista(comCambio);
         List<ItemAvaliado> avaliados = AvaliadorRegrasIndividuais.avaliarLista(normalizados, envelope);
 
@@ -280,5 +286,94 @@ class OrdemMotivosTest {
 
         assertEquals(Decisao.PARCIALMENTE_REEMBOLSADO, r.decisao());
         assertEquals(List.of(MotivoCodigo.TETO_HOSPEDAGEM_APLICADO), codigos(r));
+    }
+
+    // ---- 8. Ordem estrutural por campo — despesa.moeda entre valor e tem_nota_fiscal --------
+
+    @Test
+    @DisplayName("8 — erro estrutural em despesa.moeda aparece entre despesa.valor e despesa.tem_nota_fiscal na ordem canônica de campo")
+    void ordemEstruturalPorCampo_incluiMoedaEntreValorETemNotaFiscal() {
+        String json = envelopeComItens("""
+                { "id": "d-001", "data": "2026-07-03", "categoria": "alimentacao", "descricao": "Almoco",
+                  "fornecedor": "Restaurante X", "valor": "72,50", "moeda": "usd", "tem_nota_fiscal": "sim" }""");
+
+        List<ResultadoItem> resultados = pipelineCompleto(json);
+        ResultadoItem r = resultados.get(0);
+
+        assertEquals(Decisao.RECUSADO, r.decisao());
+        assertEquals(3, r.motivos().size());
+
+        assertEquals(CampoCanonico.VALOR, r.motivos().get(0).campo());
+        assertEquals(CampoCanonico.MOEDA, r.motivos().get(1).campo());
+        assertEquals(CampoCanonico.TEM_NOTA_FISCAL, r.motivos().get(2).campo());
+
+        assertEquals(MotivoCodigo.CAMPO_TIPO_INVALIDO, r.motivos().get(0).codigo());
+        assertEquals(MotivoCodigo.CAMPO_FORMATO_INVALIDO, r.motivos().get(1).codigo());
+        assertEquals(MotivoCodigo.CAMPO_TIPO_INVALIDO, r.motivos().get(2).codigo());
+    }
+
+    // ---- 9. Coexistência cambial e política (estágio 3 antes do estágio 5) ------------------
+
+    @Test
+    @DisplayName("9 — MOEDA_SEM_COTACAO e CATEGORIA_FORA_POLITICA coexistem: MOEDA_SEM_COTACAO antes de CATEGORIA_FORA_POLITICA")
+    void coexistenciaCambialEPolitica_moedaSemCotacaoAntesDeCategoriaForaPolitica() {
+        String json = envelopeComItens("""
+                { "id": "d-001", "data": "2026-07-10", "categoria": "coworking", "descricao": "Sala",
+                  "fornecedor": "Fornecedor X", "valor": 100.00, "moeda": "USD", "tem_nota_fiscal": true }""");
+
+        TabelaCambio cambioSemCotacao = new TabelaCambio("BRL", Map.of());
+        List<ResultadoItem> resultados = pipelineCompleto(json, cambioSemCotacao);
+        ResultadoItem r = resultados.get(0);
+
+        assertEquals(Decisao.RECUSADO, r.decisao());
+        assertEquals(
+                List.of(MotivoCodigo.MOEDA_SEM_COTACAO, MotivoCodigo.CATEGORIA_FORA_POLITICA),
+                codigos(r));
+    }
+
+    // ---- 10. DUPLICIDADE isolada (estágio 9) --------------------------------------------------
+
+    @Test
+    @DisplayName("10 — DUPLICIDADE aparece como motivo isolado (estágio 9): ocorrência posterior de despesa idêntica")
+    void duplicidadeEconomica_motivoIsoladoNoEstagio9() {
+        String json = envelopeComItens(
+                item("d-001", "2026-07-09", "alimentacao", "Almoco", "Restaurante X", "30.00", true),
+                item("d-002", "2026-07-09", "alimentacao", "Almoco", "Restaurante X", "30.00", true)
+        );
+
+        List<ResultadoItem> resultados = pipelineCompleto(json);
+        ResultadoItem primeiro = resultados.get(0);
+        ResultadoItem segundo = resultados.get(1);
+
+        assertEquals(Decisao.INTEGRALMENTE_REEMBOLSADO, primeiro.decisao());
+        assertTrue(primeiro.motivos().isEmpty());
+
+        assertEquals(Decisao.RECUSADO, segundo.decisao());
+        assertEquals(List.of(MotivoCodigo.DUPLICIDADE), codigos(segundo));
+    }
+
+    // ---- 11. CATEGORIA_NAO_REEMBOLSAVEL_CENTRO_CUSTO (estágio 6) ------------------------------
+
+    @Test
+    @DisplayName("11 — CATEGORIA_NAO_REEMBOLSAVEL_CENTRO_CUSTO (estágio 6) ordena depois de MOEDA_SEM_COTACAO e antes de FORA_COMPETENCIA")
+    void categoriaNaoReembolsavelCentroCusto_estagio6NaOrdemCorreta() {
+        ItemValidado validado = itemValidadoMinimo(
+                1, "d-001", LocalDate.of(2026, 4, 1), "hospedagem", new BigDecimal("480.00"), false);
+        ItemNormalizado normalizado = Normalizador.normalizar(validado);
+
+        List<Motivo> motivosForaDeOrdem = List.of(
+                new Motivo(MotivoCodigo.FORA_COMPETENCIA, RegraNegocio.RN_008, null),
+                new Motivo(MotivoCodigo.MOEDA_SEM_COTACAO, RegraNegocio.RN_020, CampoCanonico.MOEDA),
+                new Motivo(MotivoCodigo.CATEGORIA_NAO_REEMBOLSAVEL_CENTRO_CUSTO, RegraNegocio.RN_019, null)
+        );
+        ItemAvaliado itemAvaliado = new ItemAvaliado(normalizado, motivosForaDeOrdem, false, new BigDecimal("0.00"));
+
+        List<ResultadoItem> resultado = CompositorSaida.compor(
+                List.of(itemAvaliado), List.of(), List.of(), List.of());
+
+        assertEquals(
+                List.of(MotivoCodigo.MOEDA_SEM_COTACAO, MotivoCodigo.CATEGORIA_NAO_REEMBOLSAVEL_CENTRO_CUSTO,
+                        MotivoCodigo.FORA_COMPETENCIA),
+                codigos(resultado.get(0)));
     }
 }

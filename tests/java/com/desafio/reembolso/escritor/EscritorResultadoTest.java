@@ -68,8 +68,8 @@ class EscritorResultadoTest {
     private static ResultadoItem resultado(int indice, String id, JsonNode valorInformado,
                                             BigDecimal valorNormalizado, BigDecimal valorReembolsavel,
                                             Decisao decisao, List<Motivo> motivos) {
-        return new ResultadoItem(indice, id, valorInformado, valorNormalizado,
-                valorReembolsavel, decisao, motivos);
+        return new ResultadoItem(indice, id, valorInformado, "BRL", BigDecimal.ONE, null,
+                valorNormalizado, valorReembolsavel, decisao, motivos);
     }
 
     private static Motivo motivo(MotivoCodigo codigo, RegraNegocio regra, CampoCanonico campo) {

@@ -10,6 +10,7 @@ import com.desafio.reembolso.pipeline.AvaliadorRegrasIndividuais.ItemAvaliado;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -115,17 +116,22 @@ public final class CompositorSaida {
         int indiceEntrada = itemValidado.getIndiceEntrada();
         String id = itemValidado.getId();
         JsonNode valorInformado = itemValidado.getValorInformado();
+        String moeda = itemValidado.getMoeda();
+        BigDecimal taxaCambioAplicada = itemValidado.getTaxaCambioAplicada();
+        LocalDate dataCotacaoUtilizada = itemValidado.getDataCotacaoUtilizada();
         BigDecimal valorNormalizado = item.itemNormalizado().valorNormalizado();
 
         if (!item.elegivel()) {
-            return new ResultadoItem(indiceEntrada, id, valorInformado, valorNormalizado,
-                    item.valorReembolsavel(), Decisao.RECUSADO, ordenarMotivos(item.motivos()));
+            return new ResultadoItem(indiceEntrada, id, valorInformado, moeda, taxaCambioAplicada,
+                    dataCotacaoUtilizada, valorNormalizado, item.valorReembolsavel(), Decisao.RECUSADO,
+                    ordenarMotivos(item.motivos()));
         }
 
         ItemAvaliado itemAposDuplicidade = mapaAposDuplicidade.get(indiceEntrada);
         if (!itemAposDuplicidade.elegivel()) {
-            return new ResultadoItem(indiceEntrada, id, valorInformado, valorNormalizado,
-                    itemAposDuplicidade.valorReembolsavel(), Decisao.RECUSADO, ordenarMotivos(itemAposDuplicidade.motivos()));
+            return new ResultadoItem(indiceEntrada, id, valorInformado, moeda, taxaCambioAplicada,
+                    dataCotacaoUtilizada, valorNormalizado, itemAposDuplicidade.valorReembolsavel(), Decisao.RECUSADO,
+                    ordenarMotivos(itemAposDuplicidade.motivos()));
         }
 
         ResultadoTeto resultadoTeto = mapaTetoDiario.get(indiceEntrada);
@@ -133,8 +139,9 @@ public final class CompositorSaida {
             resultadoTeto = mapaTetoHospedagem.get(indiceEntrada);
         }
 
-        return new ResultadoItem(indiceEntrada, id, valorInformado, valorNormalizado,
-                resultadoTeto.valorReembolsavel(), resultadoTeto.decisao(), ordenarMotivos(resultadoTeto.motivos()));
+        return new ResultadoItem(indiceEntrada, id, valorInformado, moeda, taxaCambioAplicada,
+                dataCotacaoUtilizada, valorNormalizado, resultadoTeto.valorReembolsavel(), resultadoTeto.decisao(),
+                ordenarMotivos(resultadoTeto.motivos()));
     }
 
     private static Map<Integer, ItemAvaliado> mapaAvaliadosPorIndice(List<ItemAvaliado> lista, String nomeLista) {
@@ -287,6 +294,9 @@ public final class CompositorSaida {
             int indiceEntrada,
             String id,
             JsonNode valorInformado,
+            String moeda,
+            BigDecimal taxaCambioAplicada,
+            LocalDate dataCotacaoUtilizada,
             BigDecimal valorNormalizado,
             BigDecimal valorReembolsavel,
             Decisao decisao,
