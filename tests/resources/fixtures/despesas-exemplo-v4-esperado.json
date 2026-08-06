@@ -1,0 +1,202 @@
+{
+  "colaborador": {
+    "id": "c-0417",
+    "nome": "Marina Volpi",
+    "centro_custo": "CC-ENG-PLATAFORMA"
+  },
+  "periodo": {
+    "competencia": "2026-07",
+    "inicio": "2026-07-01",
+    "fim": "2026-07-31"
+  },
+  "resultados": [
+    {
+      "indice_entrada": 1,
+      "id": "d-001",
+      "valor_informado": 72.50,
+      "moeda": "BRL",
+      "taxa_cambio_aplicada": 1,
+      "data_cotacao_utilizada": null,
+      "valor_normalizado": 72.50,
+      "valor_reembolsavel": 72.50,
+      "decisao": "INTEGRALMENTE_REEMBOLSADO",
+      "motivos": []
+    },
+    {
+      "indice_entrada": 2,
+      "id": "d-002",
+      "valor_informado": 38,
+      "moeda": "BRL",
+      "taxa_cambio_aplicada": 1,
+      "data_cotacao_utilizada": null,
+      "valor_normalizado": 38.00,
+      "valor_reembolsavel": 2.50,
+      "decisao": "PARCIALMENTE_REEMBOLSADO",
+      "motivos": [
+        { "codigo": "TETO_DIARIO_APLICADO", "regra": "RN-011", "campo": null }
+      ]
+    },
+    {
+      "indice_entrada": 3,
+      "id": "d-003",
+      "valor_informado": 100,
+      "moeda": "BRL",
+      "taxa_cambio_aplicada": 1,
+      "data_cotacao_utilizada": null,
+      "valor_normalizado": 100.00,
+      "valor_reembolsavel": 80.00,
+      "decisao": "PARCIALMENTE_REEMBOLSADO",
+      "motivos": [
+        { "codigo": "TETO_DIARIO_APLICADO", "regra": "RN-012", "campo": null }
+      ]
+    },
+    {
+      "indice_entrada": 4,
+      "id": "d-004",
+      "valor_informado": 100.01,
+      "moeda": "BRL",
+      "taxa_cambio_aplicada": 1,
+      "data_cotacao_utilizada": null,
+      "valor_normalizado": 100.01,
+      "valor_reembolsavel": 0.00,
+      "decisao": "RECUSADO",
+      "motivos": [
+        { "codigo": "NOTA_FISCAL_AUSENTE", "regra": "RN-009", "campo": null }
+      ]
+    },
+    {
+      "indice_entrada": 5,
+      "id": "d-005",
+      "valor_informado": 89,
+      "moeda": "BRL",
+      "taxa_cambio_aplicada": 1,
+      "data_cotacao_utilizada": null,
+      "valor_normalizado": 89.00,
+      "valor_reembolsavel": 0.00,
+      "decisao": "RECUSADO",
+      "motivos": [
+        { "codigo": "CATEGORIA_NAO_REEMBOLSAVEL_CENTRO_CUSTO", "regra": "RN-019", "campo": null }
+      ]
+    },
+    {
+      "indice_entrada": 6,
+      "id": "d-006",
+      "valor_informado": 54.90,
+      "moeda": "BRL",
+      "taxa_cambio_aplicada": 1,
+      "data_cotacao_utilizada": null,
+      "valor_normalizado": 54.90,
+      "valor_reembolsavel": 54.90,
+      "decisao": "INTEGRALMENTE_REEMBOLSADO",
+      "motivos": []
+    },
+    {
+      "indice_entrada": 7,
+      "id": "d-007",
+      "valor_informado": 54.90,
+      "moeda": "BRL",
+      "taxa_cambio_aplicada": 1,
+      "data_cotacao_utilizada": null,
+      "valor_normalizado": 54.90,
+      "valor_reembolsavel": 0.00,
+      "decisao": "RECUSADO",
+      "motivos": [
+        { "codigo": "DUPLICIDADE", "regra": "RN-010", "campo": null }
+      ]
+    },
+    {
+      "indice_entrada": 8,
+      "id": "d-008",
+      "valor_informado": 41,
+      "moeda": "BRL",
+      "taxa_cambio_aplicada": 1,
+      "data_cotacao_utilizada": null,
+      "valor_normalizado": 41.00,
+      "valor_reembolsavel": 0.00,
+      "decisao": "RECUSADO",
+      "motivos": [
+        { "codigo": "FORA_COMPETENCIA", "regra": "RN-008", "campo": null }
+      ]
+    },
+    {
+      "indice_entrada": 9,
+      "id": "d-009",
+      "valor_informado": -45,
+      "moeda": "BRL",
+      "taxa_cambio_aplicada": 1,
+      "data_cotacao_utilizada": null,
+      "valor_normalizado": -45.00,
+      "valor_reembolsavel": 0.00,
+      "decisao": "RECUSADO",
+      "motivos": [
+        { "codigo": "VALOR_NAO_POSITIVO", "regra": "RN-006", "campo": null }
+      ]
+    },
+    {
+      "indice_entrada": 10,
+      "id": "d-010",
+      "valor_informado": 480,
+      "moeda": "BRL",
+      "taxa_cambio_aplicada": 1,
+      "data_cotacao_utilizada": null,
+      "valor_normalizado": 480.00,
+      "valor_reembolsavel": 0.00,
+      "decisao": "RECUSADO",
+      "motivos": [
+        { "codigo": "CATEGORIA_NAO_REEMBOLSAVEL_CENTRO_CUSTO", "regra": "RN-019", "campo": null }
+      ]
+    },
+    {
+      "indice_entrada": 11,
+      "id": "d-011",
+      "valor_informado": 33.333,
+      "moeda": "BRL",
+      "taxa_cambio_aplicada": 1,
+      "data_cotacao_utilizada": null,
+      "valor_normalizado": 33.33,
+      "valor_reembolsavel": 33.33,
+      "decisao": "INTEGRALMENTE_REEMBOLSADO",
+      "motivos": []
+    },
+    {
+      "indice_entrada": 12,
+      "id": "d-012",
+      "valor_informado": 47.20,
+      "moeda": "BRL",
+      "taxa_cambio_aplicada": 1,
+      "data_cotacao_utilizada": null,
+      "valor_normalizado": 47.20,
+      "valor_reembolsavel": 47.20,
+      "decisao": "INTEGRALMENTE_REEMBOLSADO",
+      "motivos": []
+    },
+    {
+      "indice_entrada": 13,
+      "id": "d-013",
+      "valor_informado": 690,
+      "moeda": "BRL",
+      "taxa_cambio_aplicada": 1,
+      "data_cotacao_utilizada": null,
+      "valor_normalizado": 690.00,
+      "valor_reembolsavel": 0.00,
+      "decisao": "RECUSADO",
+      "motivos": [
+        { "codigo": "CATEGORIA_NAO_REEMBOLSAVEL_CENTRO_CUSTO", "regra": "RN-019", "campo": null },
+        { "codigo": "NOTA_FISCAL_AUSENTE", "regra": "RN-009", "campo": null }
+      ]
+    },
+    {
+      "indice_entrada": 14,
+      "id": "d-014",
+      "valor_informado": 61,
+      "moeda": "BRL",
+      "taxa_cambio_aplicada": 1,
+      "data_cotacao_utilizada": null,
+      "valor_normalizado": 61.00,
+      "valor_reembolsavel": 61.00,
+      "decisao": "INTEGRALMENTE_REEMBOLSADO",
+      "motivos": []
+    }
+  ],
+  "total_reembolsavel": 351.43
+}

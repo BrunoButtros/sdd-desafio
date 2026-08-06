@@ -1265,7 +1265,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
   - **Commit sugerido:** `test(T-050): fixture de politica historica e regressao dos 585,43`
   - **Status:** [x] concluída
 
-- [ ] **T-051** — Regressão política v4 / `CC-ENG-PLATAFORMA` — R$351,43
+- [x] **T-051** — Regressão política v4 / `CC-ENG-PLATAFORMA` — R$351,43
   - **O que faz:** processa o mesmo `exemplos/despesas-exemplo.json` com `politica-v4.json` real e um envelope cujo `colaborador.centro_custo` é `"CC-ENG-PLATAFORMA"` (cadastrado na tabela), confirmando `total_reembolsavel = 351.43` (CA-038) e as quatro mudanças de item declaradas em `spec.md` §12.2 (`d-001` integral `72,50`; `d-002` parcial `2,50`; `d-010` recusado `0,00`/`CATEGORIA_NAO_REEMBOLSAVEL_CENTRO_CUSTO`; `d-014` integral `61,00`), comparado estruturalmente contra um fixture novo escrito manualmente a partir de §12.2.
   - **RN atendidas:** RN-019.
   - **CA atendidos:** CA-038.
@@ -1286,7 +1286,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
     mvn -q test -Dtest=RegressaoHistoricaTest
     ```
   - **Commit sugerido:** `test(T-051): regressao da politica v4 sobre CC-ENG-PLATAFORMA — total 351,43`
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 - [ ] **T-052** — Integração envelope — Rafael / `CC-COMERCIAL` — R$1.143,26
   - **O que faz:** processa `exemplos/envelope/despesas-envelope.json` (Rafael Nkemelu, `CC-COMERCIAL`) com `exemplos/envelope/politica-v4.json` e `exemplos/envelope/cambio.json` reais, confirmando `total_reembolsavel = 1143.26` (CA-039), comparado estruturalmente contra um fixture manual construído a partir da tabela de `spec.md` §12.3 (os dez itens `e-001` a `e-010`, incluindo as três conversões cambiais e o motivo `CATEGORIA_NAO_REEMBOLSAVEL_CENTRO_CUSTO` de `e-009`).
