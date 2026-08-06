@@ -70,7 +70,12 @@ class NotaFiscalTest {
     }
 
     private static List<ItemNormalizado> normalizar(String json) {
-        return Normalizador.normalizarLista(validar(json));
+        return Normalizador.normalizarLista(CambioTesteSupport.resolverLista(validar(json)));
+    }
+
+    private static List<ItemNormalizado> normalizarDespesas(Envelope envelope) {
+        List<ItemValidado> validados = ValidadorItem.validarLista(envelope.getDespesas());
+        return Normalizador.normalizarLista(CambioTesteSupport.resolverLista(validados));
     }
 
     private static Motivo notaFiscalAusente() {
@@ -366,7 +371,8 @@ class NotaFiscalTest {
                 """;
         List<ItemValidado> validados = validar(json);
         List<ItemValidado> comIdDuplicado = DetectorIdDuplicado.detectar(validados);
-        List<ItemNormalizado> normalizados = Normalizador.normalizarLista(comIdDuplicado);
+        List<ItemValidado> comCambio = CambioTesteSupport.resolverLista(comIdDuplicado);
+        List<ItemNormalizado> normalizados = Normalizador.normalizarLista(comCambio);
         List<ItemAvaliado> avaliados = AvaliadorRegrasIndividuais.avaliarLista(normalizados);
 
         ItemAvaliado primeiro = avaliados.get(0);
@@ -410,7 +416,7 @@ class NotaFiscalTest {
                 }
                 """.formatted(JANELA_JULHO);
         Envelope envelope = envelope(json);
-        ItemNormalizado item = Normalizador.normalizarLista(ValidadorItem.validarLista(envelope.getDespesas())).get(0);
+        ItemNormalizado item = normalizarDespesas(envelope).get(0);
 
         ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item, envelope);
 
@@ -433,7 +439,7 @@ class NotaFiscalTest {
                 }
                 """.formatted(JANELA_JULHO);
         Envelope envelope = envelope(json);
-        ItemNormalizado item = Normalizador.normalizarLista(ValidadorItem.validarLista(envelope.getDespesas())).get(0);
+        ItemNormalizado item = normalizarDespesas(envelope).get(0);
 
         ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item, envelope);
 
@@ -505,7 +511,7 @@ class NotaFiscalTest {
                 """.formatted(JANELA_JULHO);
         Envelope envelope = envelope(json);
         List<ItemNormalizado> normalizados =
-                Normalizador.normalizarLista(ValidadorItem.validarLista(envelope.getDespesas()));
+                normalizarDespesas(envelope);
         List<ItemAvaliado> avaliados = AvaliadorRegrasIndividuais.avaliarLista(normalizados, envelope);
 
         assertEquals(2, avaliados.size());

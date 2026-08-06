@@ -7,6 +7,7 @@ import com.desafio.reembolso.modelo.ItemValidado;
 import com.desafio.reembolso.modelo.ItemValidado.Motivo;
 import com.desafio.reembolso.modelo.MotivoCodigo;
 import com.desafio.reembolso.modelo.RegraNegocio;
+import com.desafio.reembolso.modelo.TabelaCambio;
 import com.desafio.reembolso.pipeline.AgregadorTetoDiario.ResultadoTeto;
 import com.desafio.reembolso.pipeline.AvaliadorRegrasIndividuais.ItemAvaliado;
 import com.desafio.reembolso.pipeline.Normalizador.ItemNormalizado;
@@ -17,8 +18,12 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.NavigableMap;
+import java.util.TreeMap;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -87,6 +92,22 @@ class RegraViagemEfeitoNuloTest {
                 + "\"valor\": " + valorJson + ", \"tem_nota_fiscal\": true }";
     }
 
+    /** Item de alimentação em moeda estrangeira — usado nos cenários CA-028. */
+    private static String itemAlimentacaoMoeda(String id, String data, String descricao, String fornecedor,
+                                                String valorJson, String moeda) {
+        return "{ \"id\": \"" + id + "\", \"data\": \"" + data + "\", \"categoria\": \"alimentacao\", "
+                + "\"descricao\": \"" + descricao + "\", \"fornecedor\": \"" + fornecedor + "\", "
+                + "\"valor\": " + valorJson + ", \"moeda\": \"" + moeda + "\", \"tem_nota_fiscal\": true }";
+    }
+
+    /** Item de hospedagem em moeda estrangeira — usado nos cenários CA-028. */
+    private static String itemHospedagemMoeda(String id, String data, String descricao, String fornecedor,
+                                               String valorJson, String moeda) {
+        return "{ \"id\": \"" + id + "\", \"data\": \"" + data + "\", \"categoria\": \"hospedagem\", "
+                + "\"descricao\": \"" + descricao + "\", \"fornecedor\": \"" + fornecedor + "\", "
+                + "\"valor\": " + valorJson + ", \"moeda\": \"" + moeda + "\", \"tem_nota_fiscal\": true }";
+    }
+
     private static String envelopeComItens(String extraRaizJson, String colaboradorJson, String... itensJson) {
         List<String> camposRaiz = new ArrayList<>();
         if (!colaboradorJson.isEmpty()) {
@@ -107,10 +128,15 @@ class RegraViagemEfeitoNuloTest {
     // ---- Pipeline real obrigatório ---------------------------------------------
 
     private static List<ItemAvaliado> elegiveisParaTetos(String json) {
+        return elegiveisParaTetos(json, CambioTesteSupport.TABELA_BRL);
+    }
+
+    private static List<ItemAvaliado> elegiveisParaTetos(String json, TabelaCambio cambio) {
         Envelope envelope = envelope(json);
         List<ItemValidado> validados = ValidadorItem.validarLista(envelope.getDespesas());
         List<ItemValidado> idsVerificados = DetectorIdDuplicado.detectar(validados);
-        List<ItemNormalizado> normalizados = Normalizador.normalizarLista(idsVerificados);
+        List<ItemValidado> comCambio = CambioTesteSupport.resolverLista(idsVerificados, cambio);
+        List<ItemNormalizado> normalizados = Normalizador.normalizarLista(comCambio);
         List<ItemAvaliado> avaliados = AvaliadorRegrasIndividuais.avaliarLista(normalizados, envelope);
         List<ItemAvaliado> aprovados = SeletorElegiveis.selecionar(avaliados);
         List<ItemAvaliado> aposDuplicidade = DetectorDuplicidadeEconomica.detectar(aprovados);
@@ -118,7 +144,11 @@ class RegraViagemEfeitoNuloTest {
     }
 
     private static ResultadoTeto resultadoDiarioUnico(String json) {
-        List<ResultadoTeto> resultados = AgregadorTetoDiario.aplicar(elegiveisParaTetos(json));
+        return resultadoDiarioUnico(json, CambioTesteSupport.TABELA_BRL);
+    }
+
+    private static ResultadoTeto resultadoDiarioUnico(String json, TabelaCambio cambio) {
+        List<ResultadoTeto> resultados = AgregadorTetoDiario.aplicar(elegiveisParaTetos(json, cambio));
         assertEquals(1, resultados.size(), "cenário deve produzir exatamente um item elegível de teto diário");
         return resultados.get(0);
     }
@@ -127,6 +157,16 @@ class RegraViagemEfeitoNuloTest {
         List<ResultadoTeto> resultados = AgregadorTetoHospedagem.aplicar(elegiveisParaTetos(json));
         assertEquals(1, resultados.size(), "cenário deve produzir exatamente um item elegível de teto de hospedagem");
         return resultados.get(0);
+    }
+
+    /**
+     * Tabela de câmbio explícita para os cenários CA-028: moeda base BRL,
+     * uma única cotação de EUR na data usada pelos cenários deste teste.
+     */
+    private static TabelaCambio tabelaComEur(LocalDate data, BigDecimal taxa) {
+        NavigableMap<LocalDate, BigDecimal> cotacoesEur = new TreeMap<>();
+        cotacoesEur.put(data, taxa);
+        return new TabelaCambio("BRL", Map.of("EUR", cotacoesEur));
     }
 
     private static void assertResultadoBaseAlimentacao(ResultadoTeto resultado) {
@@ -307,5 +347,87 @@ class RegraViagemEfeitoNuloTest {
         assertEquals(MotivoCodigo.TETO_HOSPEDAGEM_APLICADO, motivo.codigo());
         assertEquals(RegraNegocio.RN_013, motivo.regra());
         assertNull(motivo.campo());
+    }
+
+    // ---- 14. CA-028: moeda estrangeira não amplia teto ---------------------------------------
+
+    @Test
+    @DisplayName("14 — CA-028: item elegível em EUR com cotação válida não amplia o teto diário, resultado idêntico ao cenário-base BRL")
+    void moedaEstrangeiraComCotacaoValida_naoAmpliaTetoDiario() {
+        LocalDate data = LocalDate.of(2026, 7, 3);
+        TabelaCambio tabelaEur = tabelaComEur(data, new BigDecimal("2.00"));
+        String json = envelopeComItem(
+                itemAlimentacaoMoeda("d-001", "2026-07-03", "Almoco com cliente", "Restaurante Sabor",
+                        "35.00", "EUR"));
+
+        assertResultadoBaseAlimentacao(resultadoDiarioUnico(json, tabelaEur));
+    }
+
+    // ---- 15. CA-028: moeda estrangeira não afeta outro item do mesmo dia --------------------------
+
+    @Test
+    @DisplayName("15 — CA-028: hospedagem em EUR não amplia teto próprio nem afeta o teto diário de um item de alimentação distinto do mesmo período")
+    void moedaEstrangeiraEmHospedagem_naoAfetaOutroItem() {
+        LocalDate dataAlimentacao = LocalDate.of(2026, 7, 3);
+        LocalDate dataHospedagem = LocalDate.of(2026, 7, 14);
+        NavigableMap<LocalDate, BigDecimal> cotacoesEur = new TreeMap<>();
+        cotacoesEur.put(dataAlimentacao, new BigDecimal("2.00"));
+        cotacoesEur.put(dataHospedagem, new BigDecimal("2.00"));
+        TabelaCambio tabelaEur = new TabelaCambio("BRL", Map.of("EUR", cotacoesEur));
+
+        String json = envelopeComItens("", "",
+                itemAlimentacao("Almoco com cliente", "Restaurante Sabor"),
+                itemHospedagemMoeda("d-002", "2026-07-14", "Estadia corporativa", "Hotel Central",
+                        "240.00", "EUR"));
+
+        List<ItemAvaliado> elegiveis = elegiveisParaTetos(json, tabelaEur);
+        assertEquals(2, elegiveis.size(), "alimentação (BRL) e hospedagem (EUR) não devem colidir por duplicidade econômica");
+
+        List<ResultadoTeto> resultadosDiario = AgregadorTetoDiario.aplicar(elegiveis);
+        assertEquals(1, resultadosDiario.size());
+        assertResultadoBaseAlimentacao(resultadosDiario.get(0));
+
+        List<ResultadoTeto> resultadosHospedagem = AgregadorTetoHospedagem.aplicar(elegiveis);
+        assertEquals(1, resultadosHospedagem.size());
+        ResultadoTeto hospedagem = resultadosHospedagem.get(0);
+        assertEquals(new BigDecimal("250.00"), hospedagem.valorReembolsavel(),
+                "hospedagem em EUR (240.00 x 2.00 = 480.00 convertido) segue o mesmo teto de R$250,00, sem ampliação");
+        assertEquals(Decisao.PARCIALMENTE_REEMBOLSADO, hospedagem.decisao());
+        assertEquals(RegraNegocio.RN_013, hospedagem.motivos().get(0).regra());
+    }
+
+    // ---- 16. CA-028: trocar BRL por EUR com valor convertido equivalente não altera RN-016 --------
+
+    @Test
+    @DisplayName("16 — CA-028: trocar a moeda de um item de BRL para EUR, mantendo equivalente o valor convertido em BRL, não altera o comportamento de RN-016")
+    void trocarMoedaDeBrlParaEurComValorEquivalente_resultadoIdentico() {
+        LocalDate data = LocalDate.of(2026, 7, 3);
+        String jsonBrl = envelopeComItem(itemAlimentacao("Almoco com cliente", "Restaurante Sabor"));
+        ResultadoTeto resultadoBrl = resultadoDiarioUnico(jsonBrl);
+
+        TabelaCambio tabelaEur = tabelaComEur(data, new BigDecimal("2.00"));
+        String jsonEur = envelopeComItem(
+                itemAlimentacaoMoeda("d-001", "2026-07-03", "Almoco com cliente", "Restaurante Sabor",
+                        "35.00", "EUR"));
+        ResultadoTeto resultadoEur = resultadoDiarioUnico(jsonEur, tabelaEur);
+
+        assertEquals(resultadoBrl.valorReembolsavel(), resultadoEur.valorReembolsavel(),
+                "valor convertido equivalente (35.00 EUR x 2.00 = 70.00) deve produzir o mesmo resultado que 70.00 BRL");
+        assertEquals(resultadoBrl.decisao(), resultadoEur.decisao());
+        assertEquals(resultadoBrl.motivos(), resultadoEur.motivos());
+    }
+
+    // ---- 17. CA-028: nenhuma inferência de viagem por moeda estrangeira, mesmo com texto sugestivo --
+
+    @Test
+    @DisplayName("17 — CA-028: descrição sugestiva de viagem combinada com moeda estrangeira ainda não amplia teto algum")
+    void moedaEstrangeiraComDescricaoSugestiva_naoAmpliaTeto() {
+        LocalDate data = LocalDate.of(2026, 7, 3);
+        TabelaCambio tabelaEur = tabelaComEur(data, new BigDecimal("2.00"));
+        String json = envelopeComItem(
+                itemAlimentacaoMoeda("d-001", "2026-07-03", "Almoco no aeroporto", "Restaurante Sabor",
+                        "35.00", "EUR"));
+
+        assertResultadoBaseAlimentacao(resultadoDiarioUnico(json, tabelaEur));
     }
 }

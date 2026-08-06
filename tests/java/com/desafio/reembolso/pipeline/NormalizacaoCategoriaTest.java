@@ -62,7 +62,7 @@ class NormalizacaoCategoriaTest {
     })
     void normalizaConformeCasosNormativos(String categoriaInformada, String esperado) {
         ItemValidado item = validarUnicoComCategoria('"' + categoriaInformada + '"');
-        ItemNormalizado normalizado = Normalizador.normalizar(item);
+        ItemNormalizado normalizado = CambioTesteSupport.resolverENormalizar(item);
 
         assertEquals(esperado, normalizado.categoriaNormalizada());
     }
@@ -71,7 +71,7 @@ class NormalizacaoCategoriaTest {
     @DisplayName("RN-005 — 'transporte urbano' permanece com espaço interno, não vira 'transporte_urbano'")
     void transporteUrbanoComEspaco_permaneceComEspaco() {
         ItemValidado item = validarUnicoComCategoria("\"transporte urbano\"");
-        ItemNormalizado normalizado = Normalizador.normalizar(item);
+        ItemNormalizado normalizado = CambioTesteSupport.resolverENormalizar(item);
 
         assertEquals("transporte urbano", normalizado.categoriaNormalizada());
     }
@@ -80,7 +80,7 @@ class NormalizacaoCategoriaTest {
     @DisplayName("RN-005 — espaços internos não são alterados nem colapsados")
     void espacosInternos_naoSaoAlterados() {
         ItemValidado item = validarUnicoComCategoria("\"transporte   urbano\"");
-        ItemNormalizado normalizado = Normalizador.normalizar(item);
+        ItemNormalizado normalizado = CambioTesteSupport.resolverENormalizar(item);
 
         assertEquals("transporte   urbano", normalizado.categoriaNormalizada());
     }
@@ -106,10 +106,12 @@ class NormalizacaoCategoriaTest {
         assertNull(item.getCategoria(), "pré-condição: categoria estruturalmente inválida (ausente)");
         assertFalse(item.getMotivos().isEmpty(), "item já traz motivo estrutural CAMPO_AUSENTE");
 
-        ItemNormalizado normalizado = Normalizador.normalizar(item);
+        ItemValidado resolvido = CambioTesteSupport.resolver(item);
+        ItemNormalizado normalizado = Normalizador.normalizar(resolvido);
 
         assertNull(normalizado.categoriaNormalizada());
-        assertSame(item, normalizado.item(), "ItemNormalizado deve apontar para o mesmo ItemValidado");
+        assertSame(resolvido, normalizado.item(),
+                "ItemNormalizado deve apontar para o mesmo ItemValidado (já resolvido pelo câmbio)");
         assertEquals(1, item.getMotivos().size(), "normalização não deve acrescentar nem remover motivos");
     }
 
@@ -117,10 +119,11 @@ class NormalizacaoCategoriaTest {
     @DisplayName("item original permanece inalterado após a normalização")
     void itemOriginal_permaneceInalterado() {
         ItemValidado item = validarUnicoComCategoria("\"ALIMENTACAO\"");
-        ItemNormalizado normalizado = Normalizador.normalizar(item);
+        ItemValidado resolvido = CambioTesteSupport.resolver(item);
+        ItemNormalizado normalizado = Normalizador.normalizar(resolvido);
 
         assertEquals("ALIMENTACAO", item.getCategoria(), "categoria original não pode ser alterada");
-        assertSame(item, normalizado.item());
+        assertSame(resolvido, normalizado.item());
     }
 
     @Test
@@ -144,7 +147,7 @@ class NormalizacaoCategoriaTest {
         int motivosAntes = item.getMotivos().size();
         assertTrue(motivosAntes > 0, "pré-condição: item traz motivo estrutural de data malformada");
 
-        ItemNormalizado normalizado = Normalizador.normalizar(item);
+        ItemNormalizado normalizado = CambioTesteSupport.resolverENormalizar(item);
 
         assertEquals("alimentacao", normalizado.categoriaNormalizada());
         assertEquals(motivosAntes, item.getMotivos().size(), "motivos estruturais anteriores devem permanecer intactos");
@@ -167,7 +170,7 @@ class NormalizacaoCategoriaTest {
             throw new RuntimeException(e);
         }
         List<ItemValidado> itens = ValidadorItem.validarLista(despesas);
-        List<ItemNormalizado> resultado = Normalizador.normalizarLista(itens);
+        List<ItemNormalizado> resultado = CambioTesteSupport.resolverENormalizarLista(itens);
 
         assertThrows(UnsupportedOperationException.class, () -> resultado.add(resultado.get(0)));
     }

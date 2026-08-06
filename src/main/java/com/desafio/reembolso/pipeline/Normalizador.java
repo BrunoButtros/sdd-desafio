@@ -15,7 +15,10 @@ import java.util.regex.Pattern;
  * RN-004, RN-005). Não avalia elegibilidade, não decide vocabulário fechado
  * de categoria (RN-007, T-009) e não produz motivos novos — apenas carrega
  * o valor e a categoria normalizados ao lado do {@link ItemValidado}
- * original, sem alterá-lo.
+ * original, sem alterá-lo. O valor normalizado parte de
+ * {@link ItemValidado#getValorConvertidoBruto()} — já resolvido por
+ * {@link ResolutorCambio} (BRL ou moeda estrangeira convertida) —, nunca de
+ * {@link ItemValidado#getValor()} diretamente (RN-020, plan §9).
  */
 public final class Normalizador {
 
@@ -25,7 +28,7 @@ public final class Normalizador {
     }
 
     public static ItemNormalizado normalizar(ItemValidado item) {
-        BigDecimal valorNormalizado = normalizarValor(item.getValor());
+        BigDecimal valorNormalizado = normalizarValor(item.getValorConvertidoBruto());
         String categoriaNormalizada = normalizarCategoria(item.getCategoria());
         return new ItemNormalizado(item, valorNormalizado, categoriaNormalizada);
     }

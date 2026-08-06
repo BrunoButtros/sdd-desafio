@@ -54,7 +54,8 @@ class OrdemMotivosTest {
 
         List<ItemValidado> validados = ValidadorItem.validarLista(envelope.getDespesas());
         List<ItemValidado> idsVerificados = DetectorIdDuplicado.detectar(validados);
-        List<ItemNormalizado> normalizados = Normalizador.normalizarLista(idsVerificados);
+        List<ItemValidado> comCambio = CambioTesteSupport.resolverLista(idsVerificados);
+        List<ItemNormalizado> normalizados = Normalizador.normalizarLista(comCambio);
         List<ItemAvaliado> avaliados = AvaliadorRegrasIndividuais.avaliarLista(normalizados, envelope);
 
         List<ItemAvaliado> aprovados = SeletorElegiveis.selecionar(avaliados);
@@ -141,7 +142,8 @@ class OrdemMotivosTest {
     private static ItemValidado itemValidadoMinimo(int indiceEntrada, String id, LocalDate data,
                                                      String categoria, BigDecimal valor, boolean temNotaFiscal) {
         return new ItemValidado(indiceEntrada, id, data, categoria, "descricao", "fornecedor",
-                valor, temNotaFiscal, DecimalNode.valueOf(valor), List.of());
+                valor, temNotaFiscal, DecimalNode.valueOf(valor), List.of(),
+                "BRL", BigDecimal.ONE, null, valor);
     }
 
     @Test

@@ -73,7 +73,8 @@ class ComposicaoSaidaTest {
 
         List<ItemValidado> validados = ValidadorItem.validarLista(envelope.getDespesas());
         List<ItemValidado> idsVerificados = DetectorIdDuplicado.detectar(validados);
-        List<ItemNormalizado> normalizados = Normalizador.normalizarLista(idsVerificados);
+        List<ItemValidado> comCambio = CambioTesteSupport.resolverLista(idsVerificados);
+        List<ItemNormalizado> normalizados = Normalizador.normalizarLista(comCambio);
         List<ItemAvaliado> avaliados = AvaliadorRegrasIndividuais.avaliarLista(normalizados, envelope);
 
         List<ItemAvaliado> aprovados = SeletorElegiveis.selecionar(avaliados);
@@ -416,7 +417,8 @@ class ComposicaoSaidaTest {
         Envelope envelope = ValidadorEnvelope.validar(lerArquivoExemplo());
         List<ItemValidado> validados = ValidadorItem.validarLista(envelope.getDespesas());
         List<ItemValidado> idsVerificados = DetectorIdDuplicado.detectar(validados);
-        List<ItemNormalizado> normalizados = Normalizador.normalizarLista(idsVerificados);
+        List<ItemValidado> comCambio = CambioTesteSupport.resolverLista(idsVerificados);
+        List<ItemNormalizado> normalizados = Normalizador.normalizarLista(comCambio);
         List<ItemAvaliado> avaliados = AvaliadorRegrasIndividuais.avaliarLista(normalizados, envelope);
         List<ItemAvaliado> aprovados = SeletorElegiveis.selecionar(avaliados);
         List<ItemAvaliado> aposDuplicidade = DetectorDuplicidadeEconomica.detectar(aprovados);
@@ -454,7 +456,8 @@ class ComposicaoSaidaTest {
         Envelope envelope = ValidadorEnvelope.validar(lerArquivoExemplo());
         List<ItemValidado> validados = ValidadorItem.validarLista(envelope.getDespesas());
         List<ItemValidado> idsVerificados = DetectorIdDuplicado.detectar(validados);
-        List<ItemNormalizado> normalizados = Normalizador.normalizarLista(idsVerificados);
+        List<ItemValidado> comCambio = CambioTesteSupport.resolverLista(idsVerificados);
+        List<ItemNormalizado> normalizados = Normalizador.normalizarLista(comCambio);
         List<ItemAvaliado> avaliados = AvaliadorRegrasIndividuais.avaliarLista(normalizados, envelope);
         List<ItemAvaliado> aprovados = SeletorElegiveis.selecionar(avaliados);
         List<ItemAvaliado> aposDuplicidade = DetectorDuplicidadeEconomica.detectar(aprovados);
@@ -502,7 +505,8 @@ class ComposicaoSaidaTest {
     private static ItemValidado itemValidadoMinimo(int indiceEntrada, String id, LocalDate data,
                                                      String categoria, BigDecimal valor) {
         return new ItemValidado(indiceEntrada, id, data, categoria, "descricao", "fornecedor",
-                valor, true, DecimalNode.valueOf(valor), List.of());
+                valor, true, DecimalNode.valueOf(valor), List.of(),
+                "BRL", BigDecimal.ONE, null, valor);
     }
 
     private static ItemAvaliado itemAvaliadoElegivel(int indiceEntrada, String categoria, BigDecimal valor) {

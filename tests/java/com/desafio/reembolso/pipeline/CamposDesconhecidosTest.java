@@ -124,7 +124,8 @@ class CamposDesconhecidosTest {
         Envelope envelope = envelope(json);
         List<ItemValidado> validados = ValidadorItem.validarLista(envelope.getDespesas());
         List<ItemValidado> idsVerificados = DetectorIdDuplicado.detectar(validados);
-        List<ItemNormalizado> normalizados = Normalizador.normalizarLista(idsVerificados);
+        List<ItemValidado> comCambio = CambioTesteSupport.resolverLista(idsVerificados);
+        List<ItemNormalizado> normalizados = Normalizador.normalizarLista(comCambio);
         List<ItemAvaliado> avaliados = AvaliadorRegrasIndividuais.avaliarLista(normalizados, envelope);
         List<ItemAvaliado> aprovados = SeletorElegiveis.selecionar(avaliados);
         List<ItemAvaliado> aposDuplicidade = DetectorDuplicidadeEconomica.detectar(aprovados);

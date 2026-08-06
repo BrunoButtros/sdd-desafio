@@ -28,9 +28,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Cobre RN-006 / CA-017 (parcial — spec 4.5, 7, 8.2, 8.4): item cujo valor
  * normalizado seja menor ou igual a zero recebe {@code VALOR_NAO_POSITIVO}
  * e fica inelegível, com {@code valorReembolsavel} {@code 0.00}. RN-006
- * depende exclusivamente de {@code valorNormalizado} — não é bloqueada por
- * motivo estrutural em outro campo, nem por {@code ID_DUPLICADO}, e não é
- * avaliada quando o próprio valor é estruturalmente inválido.
+ * depende de {@code valorNormalizado} — não é bloqueada por
+ * {@code ID_DUPLICADO}, e não é avaliada quando o próprio valor é
+ * estruturalmente inválido. Desde RN-020/T-038, {@code valorNormalizado}
+ * também não é calculável quando {@code despesa.data} (ou {@code moeda})
+ * for estruturalmente inválida, porque {@link ResolutorCambio} exige os
+ * três campos — {@code valor}, {@code moeda}, {@code data} — para produzir
+ * {@code valorConvertidoBruto}, que {@link Normalizador} consome.
  */
 @DisplayName("Valor não positivo — RN-006 / CA-017 (parcial)")
 class ValorNaoPositivoTest {
@@ -51,7 +55,7 @@ class ValorNaoPositivoTest {
     }
 
     private static List<ItemNormalizado> normalizar(String json) {
-        return Normalizador.normalizarLista(validar(json));
+        return Normalizador.normalizarLista(CambioTesteSupport.resolverLista(validar(json)));
     }
 
     private static Motivo valorNaoPositivo() {
@@ -159,8 +163,8 @@ class ValorNaoPositivoTest {
     }
 
     @Test
-    @DisplayName("7 — data malformada com valor negativo: mantém CAMPO_FORMATO_INVALIDO de despesa.data e também recebe VALOR_NAO_POSITIVO")
-    void dataInvalidaComValorNegativo_naoBloqueiaRn006() {
+    @DisplayName("7 — data malformada com valor negativo: mantém CAMPO_FORMATO_INVALIDO de despesa.data; RN-006 não é avaliada porque, desde RN-020/T-038, valor_normalizado não é calculável sem data estruturalmente válida (ResolutorCambio exige valor/moeda/data)")
+    void dataInvalidaComValorNegativo_bloqueiaRn006PorValorNaoCalculavel() {
         String json = """
                 {
                   "despesas": [
@@ -170,13 +174,16 @@ class ValorNaoPositivoTest {
                 }
                 """;
         ItemNormalizado item = normalizar(json).get(0);
+        assertNull(item.valorNormalizado(),
+                "sem data estruturalmente válida, ResolutorCambio não resolve o item e valorConvertidoBruto permanece nulo (RN-020)");
 
         ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item);
 
-        assertEquals(2, avaliado.motivos().size());
+        assertEquals(1, avaliado.motivos().size());
         assertEquals(MotivoCodigo.CAMPO_FORMATO_INVALIDO, avaliado.motivos().get(0).codigo());
         assertEquals(CampoCanonico.DATA, avaliado.motivos().get(0).campo());
-        assertTrue(avaliado.motivos().contains(valorNaoPositivo()));
+        assertFalse(avaliado.motivos().contains(valorNaoPositivo()),
+                "RN-006 depende de valor_normalizado calculável — data inválida impede o cálculo, mesmo com valor negativo estruturalmente válido");
         assertFalse(avaliado.elegivel());
     }
 
@@ -193,7 +200,8 @@ class ValorNaoPositivoTest {
                 """;
         List<ItemValidado> validados = validar(json);
         List<ItemValidado> comIdDuplicado = DetectorIdDuplicado.detectar(validados);
-        List<ItemNormalizado> normalizados = Normalizador.normalizarLista(comIdDuplicado);
+        List<ItemValidado> comCambio = CambioTesteSupport.resolverLista(comIdDuplicado);
+        List<ItemNormalizado> normalizados = Normalizador.normalizarLista(comCambio);
         List<ItemAvaliado> avaliados = AvaliadorRegrasIndividuais.avaliarLista(normalizados);
 
         ItemAvaliado primeiro = avaliados.get(0);
@@ -216,7 +224,8 @@ class ValorNaoPositivoTest {
                 """;
         List<ItemValidado> validados = validar(json);
         List<ItemValidado> comIdDuplicado = DetectorIdDuplicado.detectar(validados);
-        List<ItemNormalizado> normalizados = Normalizador.normalizarLista(comIdDuplicado);
+        List<ItemValidado> comCambio = CambioTesteSupport.resolverLista(comIdDuplicado);
+        List<ItemNormalizado> normalizados = Normalizador.normalizarLista(comCambio);
         List<ItemAvaliado> avaliados = AvaliadorRegrasIndividuais.avaliarLista(normalizados);
 
         ItemAvaliado primeiro = avaliados.get(0);

@@ -64,7 +64,7 @@ class NormalizacaoMonetariaTest {
     })
     void normalizaConformeFronteirasNormativas(String informado, String esperado) {
         ItemValidado item = validarUnico(informado);
-        ItemNormalizado normalizado = Normalizador.normalizar(item);
+        ItemNormalizado normalizado = CambioTesteSupport.resolverENormalizar(item);
 
         assertEquals(2, normalizado.valorNormalizado().scale(), "escala deve ser exatamente 2");
         assertEquals(new BigDecimal(esperado), normalizado.valorNormalizado());
@@ -97,10 +97,12 @@ class NormalizacaoMonetariaTest {
         assertNull(item.getValor(), "pré-condição: valor estruturalmente inválido");
         assertFalse(item.getMotivos().isEmpty(), "item já traz motivo estrutural CAMPO_TIPO_INVALIDO");
 
-        ItemNormalizado normalizado = Normalizador.normalizar(item);
+        ItemValidado resolvido = CambioTesteSupport.resolver(item);
+        ItemNormalizado normalizado = Normalizador.normalizar(resolvido);
 
         assertNull(normalizado.valorNormalizado());
-        assertSame(item, normalizado.item(), "ItemNormalizado deve apontar para o mesmo ItemValidado");
+        assertSame(item, normalizado.item(),
+                "valor estruturalmente inválido não passa por conversão: ResolutorCambio devolve a mesma referência");
         assertEquals(1, item.getMotivos().size(), "normalização não deve acrescentar nem remover motivos");
     }
 
@@ -122,7 +124,7 @@ class NormalizacaoMonetariaTest {
             throw new RuntimeException(e);
         }
         List<ItemValidado> itens = ValidadorItem.validarLista(despesas);
-        List<ItemNormalizado> resultado = Normalizador.normalizarLista(itens);
+        List<ItemNormalizado> resultado = CambioTesteSupport.resolverENormalizarLista(itens);
 
         assertEquals(2, resultado.size());
         assertEquals(1, resultado.get(0).item().getIndiceEntrada());

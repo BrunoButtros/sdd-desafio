@@ -79,14 +79,16 @@ class DuplicidadeEconomicaTest {
         Envelope envelope = envelope(json);
         List<ItemValidado> validados = ValidadorItem.validarLista(envelope.getDespesas());
         List<ItemValidado> comIdsVerificados = DetectorIdDuplicado.detectar(validados);
-        return Normalizador.normalizarLista(comIdsVerificados);
+        List<ItemValidado> comCambio = CambioTesteSupport.resolverLista(comIdsVerificados);
+        return Normalizador.normalizarLista(comCambio);
     }
 
     private static List<ItemAvaliado> avaliar(String json) {
         Envelope envelope = envelope(json);
         List<ItemValidado> validados = ValidadorItem.validarLista(envelope.getDespesas());
         List<ItemValidado> comIdsVerificados = DetectorIdDuplicado.detectar(validados);
-        List<ItemNormalizado> normalizados = Normalizador.normalizarLista(comIdsVerificados);
+        List<ItemValidado> comCambio = CambioTesteSupport.resolverLista(comIdsVerificados);
+        List<ItemNormalizado> normalizados = Normalizador.normalizarLista(comCambio);
         return AvaliadorRegrasIndividuais.avaliarLista(normalizados, envelope);
     }
 

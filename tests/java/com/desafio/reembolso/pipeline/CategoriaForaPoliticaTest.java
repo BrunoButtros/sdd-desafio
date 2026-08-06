@@ -55,7 +55,7 @@ class CategoriaForaPoliticaTest {
     }
 
     private static List<ItemNormalizado> normalizar(String json) {
-        return Normalizador.normalizarLista(validar(json));
+        return Normalizador.normalizarLista(CambioTesteSupport.resolverLista(validar(json)));
     }
 
     private static Motivo categoriaForaPolitica() {
@@ -188,7 +188,8 @@ class CategoriaForaPoliticaTest {
                 """;
         List<ItemValidado> validados = validar(json);
         List<ItemValidado> comIdDuplicado = DetectorIdDuplicado.detectar(validados);
-        List<ItemNormalizado> normalizados = Normalizador.normalizarLista(comIdDuplicado);
+        List<ItemValidado> comCambio = CambioTesteSupport.resolverLista(comIdDuplicado);
+        List<ItemNormalizado> normalizados = Normalizador.normalizarLista(comCambio);
         List<ItemAvaliado> avaliados = AvaliadorRegrasIndividuais.avaliarLista(normalizados);
 
         ItemAvaliado primeiro = avaliados.get(0);

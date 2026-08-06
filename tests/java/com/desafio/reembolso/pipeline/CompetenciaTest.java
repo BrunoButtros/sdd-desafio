@@ -62,7 +62,12 @@ class CompetenciaTest {
     }
 
     private static List<ItemNormalizado> normalizar(String json) {
-        return Normalizador.normalizarLista(validar(json));
+        return Normalizador.normalizarLista(CambioTesteSupport.resolverLista(validar(json)));
+    }
+
+    private static List<ItemNormalizado> normalizarDespesas(Envelope envelope) {
+        List<ItemValidado> validados = ValidadorItem.validarLista(envelope.getDespesas());
+        return Normalizador.normalizarLista(CambioTesteSupport.resolverLista(validados));
     }
 
     private static Motivo foraCompetencia() {
@@ -90,7 +95,7 @@ class CompetenciaTest {
     void dataAnteriorAoInicio_recebeMotivoEFicaInelegivel() {
         String json = envelopeComItem("2026-04-15");
         Envelope envelope = envelope(json);
-        ItemNormalizado item = Normalizador.normalizarLista(ValidadorItem.validarLista(envelope.getDespesas())).get(0);
+        ItemNormalizado item = normalizarDespesas(envelope).get(0);
 
         ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item, envelope);
 
@@ -109,7 +114,7 @@ class CompetenciaTest {
     void dataPosteriorAoFim_recebeMotivoEFicaInelegivel() {
         String json = envelopeComItem("2026-08-01");
         Envelope envelope = envelope(json);
-        ItemNormalizado item = Normalizador.normalizarLista(ValidadorItem.validarLista(envelope.getDespesas())).get(0);
+        ItemNormalizado item = normalizarDespesas(envelope).get(0);
 
         ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item, envelope);
 
@@ -122,7 +127,7 @@ class CompetenciaTest {
     void bordaInicial_naoRecebeMotivoEPermaneceElegivel() {
         String json = envelopeComItem("2026-07-01");
         Envelope envelope = envelope(json);
-        ItemNormalizado item = Normalizador.normalizarLista(ValidadorItem.validarLista(envelope.getDespesas())).get(0);
+        ItemNormalizado item = normalizarDespesas(envelope).get(0);
 
         ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item, envelope);
 
@@ -136,7 +141,7 @@ class CompetenciaTest {
     void bordaFinal_naoRecebeMotivoEPermaneceElegivel() {
         String json = envelopeComItem("2026-07-31");
         Envelope envelope = envelope(json);
-        ItemNormalizado item = Normalizador.normalizarLista(ValidadorItem.validarLista(envelope.getDespesas())).get(0);
+        ItemNormalizado item = normalizarDespesas(envelope).get(0);
 
         ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item, envelope);
 
@@ -149,7 +154,7 @@ class CompetenciaTest {
     void dataInterna_permaneceElegivel() {
         String json = envelopeComItem("2026-07-15");
         Envelope envelope = envelope(json);
-        ItemNormalizado item = Normalizador.normalizarLista(ValidadorItem.validarLista(envelope.getDespesas())).get(0);
+        ItemNormalizado item = normalizarDespesas(envelope).get(0);
 
         ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item, envelope);
 
@@ -170,7 +175,7 @@ class CompetenciaTest {
                 }
                 """.formatted(JANELA_JULHO);
         Envelope envelope = envelope(json);
-        ItemNormalizado item = Normalizador.normalizarLista(ValidadorItem.validarLista(envelope.getDespesas())).get(0);
+        ItemNormalizado item = normalizarDespesas(envelope).get(0);
         assertNull(item.item().getData());
 
         ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item, envelope);
@@ -195,7 +200,7 @@ class CompetenciaTest {
                 }
                 """.formatted(JANELA_JULHO);
         Envelope envelope = envelope(json);
-        ItemNormalizado item = Normalizador.normalizarLista(ValidadorItem.validarLista(envelope.getDespesas())).get(0);
+        ItemNormalizado item = normalizarDespesas(envelope).get(0);
 
         ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item, envelope);
 
@@ -221,7 +226,8 @@ class CompetenciaTest {
         Envelope envelope = envelope(json);
         List<ItemValidado> validados = ValidadorItem.validarLista(envelope.getDespesas());
         List<ItemValidado> comIdDuplicado = DetectorIdDuplicado.detectar(validados);
-        List<ItemNormalizado> normalizados = Normalizador.normalizarLista(comIdDuplicado);
+        List<ItemValidado> comCambio = CambioTesteSupport.resolverLista(comIdDuplicado);
+        List<ItemNormalizado> normalizados = Normalizador.normalizarLista(comCambio);
         List<ItemAvaliado> avaliados = AvaliadorRegrasIndividuais.avaliarLista(normalizados, envelope);
 
         ItemAvaliado primeiro = avaliados.get(0);
@@ -236,7 +242,7 @@ class CompetenciaTest {
     void valorNegativoComDataFora_recebeAmbosMotivosNaOrdem() {
         String json = envelopeComItem("2026-04-15", "-10.00", "alimentacao", true);
         Envelope envelope = envelope(json);
-        ItemNormalizado item = Normalizador.normalizarLista(ValidadorItem.validarLista(envelope.getDespesas())).get(0);
+        ItemNormalizado item = normalizarDespesas(envelope).get(0);
 
         ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item, envelope);
 
@@ -251,7 +257,7 @@ class CompetenciaTest {
     void categoriaForaPoliticaComDataFora_recebeAmbosMotivosNaOrdem() {
         String json = envelopeComItem("2026-04-15", "50.00", "coworking", true);
         Envelope envelope = envelope(json);
-        ItemNormalizado item = Normalizador.normalizarLista(ValidadorItem.validarLista(envelope.getDespesas())).get(0);
+        ItemNormalizado item = normalizarDespesas(envelope).get(0);
 
         ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item, envelope);
 
@@ -266,7 +272,7 @@ class CompetenciaTest {
     void tresRegrasSimultaneas_ordemExata() {
         String json = envelopeComItem("2026-04-15", "-10.00", "coworking", true);
         Envelope envelope = envelope(json);
-        ItemNormalizado item = Normalizador.normalizarLista(ValidadorItem.validarLista(envelope.getDespesas())).get(0);
+        ItemNormalizado item = normalizarDespesas(envelope).get(0);
 
         ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item, envelope);
 
@@ -291,7 +297,7 @@ class CompetenciaTest {
                 """;
         Envelope envelope = envelope(json);
         assertEquals("2026-04", envelope.getPeriodoCompetencia());
-        ItemNormalizado item = Normalizador.normalizarLista(ValidadorItem.validarLista(envelope.getDespesas())).get(0);
+        ItemNormalizado item = normalizarDespesas(envelope).get(0);
 
         ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item, envelope);
 
@@ -316,7 +322,7 @@ class CompetenciaTest {
                 """.formatted(JANELA_JULHO);
         Envelope envelope = envelope(json);
         List<ItemNormalizado> normalizados =
-                Normalizador.normalizarLista(ValidadorItem.validarLista(envelope.getDespesas()));
+                normalizarDespesas(envelope);
         List<ItemAvaliado> avaliados = AvaliadorRegrasIndividuais.avaliarLista(normalizados, envelope);
 
         List<String> idsElegiveis = avaliados.stream()
@@ -341,7 +347,7 @@ class CompetenciaTest {
                 """.formatted(JANELA_JULHO);
         Envelope envelope = envelope(json);
         List<ItemNormalizado> normalizados =
-                Normalizador.normalizarLista(ValidadorItem.validarLista(envelope.getDespesas()));
+                normalizarDespesas(envelope);
         List<ItemAvaliado> avaliados = AvaliadorRegrasIndividuais.avaliarLista(normalizados, envelope);
 
         assertEquals(2, avaliados.size());
@@ -360,7 +366,7 @@ class CompetenciaTest {
     void reaplicacao_naoDuplicaMotivo() {
         String json = envelopeComItem("2026-04-15");
         Envelope envelope = envelope(json);
-        ItemNormalizado item = Normalizador.normalizarLista(ValidadorItem.validarLista(envelope.getDespesas())).get(0);
+        ItemNormalizado item = normalizarDespesas(envelope).get(0);
 
         ItemAvaliado primeiraAplicacao = AvaliadorRegrasIndividuais.avaliar(item, envelope);
         ItemAvaliado segundaAplicacao = AvaliadorRegrasIndividuais.avaliar(item, envelope);
