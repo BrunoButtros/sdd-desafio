@@ -1035,7 +1035,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
   - **Commit sugerido:** `feat(T-041): AvaliadorRegrasIndividuais aplica RN-019 com politica externa`
   - **Status:** [x] concluída
 
-- [ ] **T-042** — Wiring da política externa no `Main`
+- [x] **T-042** — Wiring da política externa no `Main`
   - **O que faz:** `Main.executarPipeline` passa a resolver a `TabelaPoliticaResolvida` a partir de `envelope.getColaboradorCentroCusto()` e da `PoliticaExterna` carregada em T-035, e a chamar a nova sobrecarga de `AvaliadorRegrasIndividuais` (T-041) em vez da antiga. `centro_custo` pertence ao envelope, não ao item — por isso uma **única** `TabelaPoliticaResolvida` é calculada por execução, e essa mesma instância é reutilizada para todos os itens do envelope, nunca recalculada item a item. Agregação de tetos (Bloco H) ainda usa `PoliticaReembolso` nesta task — só a elegibilidade de categoria e o gatilho de nota fiscal passam a vir da política externa real.
   - **RN atendidas:** RN-019, RN-009 (atualizada).
   - **CA atendidos:** confirma CA-024 a CA-027 ponta a ponta via CLI.
@@ -1055,7 +1055,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
     mvn -q test -Dtest=CliContratoTest
     ```
   - **Commit sugerido:** `feat(T-042): liga politica externa ao pipeline real via Main`
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 ---
 

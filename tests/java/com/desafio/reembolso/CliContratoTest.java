@@ -726,4 +726,92 @@ class CliContratoTest {
         assertTrue(raiz.has("total_reembolsavel"), "JSON de saída deve ser parseável e conter total_reembolsavel");
         assertEquals(0, new BigDecimal("0.00").compareTo(raiz.get("total_reembolsavel").decimalValue()));
     }
+
+    // ---- Wiring real da política externa no pipeline (T-042) --------------
+
+    private static final String POLITICA_COM_CENTRO_CUSTO = """
+            {
+              "vigencia": "2026-07-01",
+              "moeda_base": "BRL",
+              "nota_fiscal_obrigatoria_acima_de": 100.00,
+              "padrao": {
+                "alimentacao": { "limite": 60.00, "periodicidade": "dia" }
+              },
+              "centros_custo": {
+                "CC-ENG-PLATAFORMA": {
+                  "hospedagem": { "limite": 250.00, "periodicidade": "diaria" }
+                }
+              }
+            }
+            """;
+
+    private static final String CAMBIO_SEM_TAXAS_VALIDO = """
+            {
+              "moeda_base": "BRL",
+              "taxas": {}
+            }
+            """;
+
+    private static String envelopeCentroCustoSemAlimentacao() {
+        return """
+                {
+                  "colaborador": { "centro_custo": "CC-ENG-PLATAFORMA" },
+                  "periodo": { "inicio": "2026-07-01", "fim": "2026-07-31" },
+                  "despesas": [
+                    { "id": "d-001", "data": "2026-07-10", "categoria": "alimentacao",
+                      "descricao": "Almoço", "fornecedor": "Restaurante X", "valor": 50.00,
+                      "tem_nota_fiscal": true }
+                  ]
+                }
+                """;
+    }
+
+    @Test
+    @DisplayName("execução real usa a política externa carregada: categoria ausente da tabela do centro de custo "
+            + "cadastrado produz CATEGORIA_NAO_REEMBOLSAVEL_CENTRO_CUSTO/RN-019, nunca CATEGORIA_FORA_POLITICA (T-042)")
+    void integracaoReal_politicaExternaUsadaPeloMain_produzMotivoDeCentroCusto(@TempDir Path tempDir) throws Exception {
+        Path input = tempDir.resolve("entrada.json");
+        Files.writeString(input, envelopeCentroCustoSemAlimentacao(), StandardCharsets.UTF_8);
+        Path output = tempDir.resolve("resultado.json");
+        Path politica = tempDir.resolve("politica-centro-custo.json");
+        Files.writeString(politica, POLITICA_COM_CENTRO_CUSTO, StandardCharsets.UTF_8);
+        Path cambio = tempDir.resolve("cambio-sem-taxas.json");
+        Files.writeString(cambio, CAMBIO_SEM_TAXAS_VALIDO, StandardCharsets.UTF_8);
+
+        Resultado resultado = executar(
+                "calcular",
+                "--input", input.toString(),
+                "--output", output.toString(),
+                "--politica", politica.toString(),
+                "--cambio", cambio.toString());
+
+        assertEquals(0, resultado.codigo);
+        assertEquals("", resultado.stdout);
+        assertEquals("", resultado.stderr);
+        assertTrue(Files.exists(output), "--output deve ser criado em caso de sucesso");
+
+        JsonNode raiz = new ObjectMapper().readTree(output.toFile());
+        JsonNode resultados = raiz.get("resultados");
+        assertEquals(1, resultados.size(), "deve haver exatamente um item no resultado");
+
+        JsonNode item = resultados.get(0);
+        assertEquals("RECUSADO", item.get("decisao").asText());
+        assertEquals(0, new BigDecimal("0.00").compareTo(item.get("valor_reembolsavel").decimalValue()));
+
+        JsonNode motivos = item.get("motivos");
+        assertEquals(1, motivos.size(), "deve conter exatamente um motivo");
+        JsonNode motivo = motivos.get(0);
+        assertEquals("CATEGORIA_NAO_REEMBOLSAVEL_CENTRO_CUSTO", motivo.get("codigo").asText());
+        assertEquals("RN-019", motivo.get("regra").asText());
+        assertTrue(motivo.get("campo").isNull(), "campo deve ser nulo");
+
+        for (JsonNode m : motivos) {
+            assertFalse("CATEGORIA_FORA_POLITICA".equals(m.get("codigo").asText()),
+                    "não deve conter CATEGORIA_FORA_POLITICA — prova de que a política externa foi usada");
+        }
+        for (JsonNode m : motivos) {
+            String codigo = m.get("codigo").asText();
+            assertFalse(codigo.contains("TETO"), "não deve receber motivo de teto: " + codigo);
+        }
+    }
 }

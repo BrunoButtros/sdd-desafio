@@ -38,7 +38,7 @@ class ExemploCompletoTest {
     private static final Path CAMBIO = Path.of("exemplos", "envelope", "cambio.json");
 
     @Test
-    @DisplayName("processa o arquivo de exemplo e coincide estruturalmente com o fixture manual (14 registros, total 585,43)")
+    @DisplayName("processa o arquivo de exemplo e coincide estruturalmente com o fixture manual (14 registros, total 335,43)")
     void exemploCompleto_coincideEstruturalmenteComFixture(@TempDir Path tempDir) throws Exception {
         Path saida = tempDir.resolve("resultado.json");
 
@@ -71,8 +71,8 @@ class ExemploCompletoTest {
         JsonNode resultados = real.get("resultados");
         assertEquals(14, resultados.size(), "exatamente 14 registros de resultado");
 
-        assertEquals(0, new BigDecimal("585.43").compareTo(real.get("total_reembolsavel").decimalValue()),
-                "total_reembolsavel deve ser 585.43");
+        assertEquals(0, new BigDecimal("335.43").compareTo(real.get("total_reembolsavel").decimalValue()),
+                "total_reembolsavel deve ser 335.43");
 
         // Nenhuma despesa omitida ou duplicada: 14 índices distintos (1..14) e 14 ids distintos (d-001..d-014).
         Set<Integer> indicesVistos = new HashSet<>();

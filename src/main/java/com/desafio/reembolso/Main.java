@@ -9,7 +9,9 @@ import com.desafio.reembolso.leitor.ValidadorEnvelope;
 import com.desafio.reembolso.leitor.ValidadorEnvelope.EnvelopeInvalidoException;
 import com.desafio.reembolso.modelo.Envelope;
 import com.desafio.reembolso.modelo.ItemValidado;
+import com.desafio.reembolso.modelo.PoliticaExterna;
 import com.desafio.reembolso.modelo.TabelaCambio;
+import com.desafio.reembolso.modelo.TabelaPoliticaResolvida;
 import com.desafio.reembolso.pipeline.AgregadorTetoDiario;
 import com.desafio.reembolso.pipeline.AgregadorTetoDiario.ResultadoTeto;
 import com.desafio.reembolso.pipeline.AgregadorTetoHospedagem;
@@ -22,6 +24,7 @@ import com.desafio.reembolso.pipeline.DetectorIdDuplicado;
 import com.desafio.reembolso.pipeline.Normalizador;
 import com.desafio.reembolso.pipeline.Normalizador.ItemNormalizado;
 import com.desafio.reembolso.pipeline.ResolutorCambio;
+import com.desafio.reembolso.pipeline.ResolutorPoliticaCentroCusto;
 import com.desafio.reembolso.pipeline.SeletorElegiveis;
 import com.desafio.reembolso.pipeline.SomadorTotal;
 import com.desafio.reembolso.pipeline.ValidadorItem;
@@ -124,6 +127,7 @@ public final class Main {
         Path output;
         Path politica;
         Path cambio;
+        PoliticaExterna politicaExterna;
         TabelaCambio tabelaCambio;
         try {
             input = Path.of(inputPath);
@@ -131,7 +135,7 @@ public final class Main {
             politica = Path.of(politicaPath);
             cambio = Path.of(cambioPath);
 
-            LeitorPolitica.ler(politica);
+            politicaExterna = LeitorPolitica.ler(politica);
             tabelaCambio = LeitorCambio.ler(cambio);
         } catch (InvalidPathException e) {
             err.println("Caminho inválido: " + e.getMessage());
@@ -176,7 +180,7 @@ public final class Main {
             return 3;
         }
 
-        List<ResultadoItem> resultados = executarPipeline(envelope, tabelaCambio);
+        List<ResultadoItem> resultados = executarPipeline(envelope, politicaExterna, tabelaCambio);
         BigDecimal total = SomadorTotal.somar(resultados);
         String json = EscritorResultado.serializar(envelope, resultados, total);
 
@@ -192,17 +196,25 @@ public final class Main {
 
     /**
      * Passos 2 a 10 da ordem canônica (plan §2): valida os itens, detecta
-     * {@code id} duplicado, resolve a conversão cambial, normaliza, avalia
-     * as regras individuais, separa os elegíveis, detecta duplicidade
+     * {@code id} duplicado, resolve a conversão cambial, normaliza, resolve
+     * a tabela de política aplicável ao centro de custo do envelope (RN-019,
+     * uma única vez por execução), avalia as regras individuais com essa
+     * tabela e a política externa, separa os elegíveis, detecta duplicidade
      * econômica, aplica os tetos e compõe a saída final — na mesma sequência
-     * já comprovada pelos testes de pipeline (T-004 a T-016, T-037, T-038).
+     * já comprovada pelos testes de pipeline (T-004 a T-016, T-037, T-038,
+     * T-041).
      */
-    private static List<ResultadoItem> executarPipeline(Envelope envelope, TabelaCambio cambio) {
+    private static List<ResultadoItem> executarPipeline(Envelope envelope, PoliticaExterna politica,
+            TabelaCambio cambio) {
         List<ItemValidado> validados = ValidadorItem.validarLista(envelope.getDespesas());
         List<ItemValidado> idsVerificados = DetectorIdDuplicado.detectar(validados);
         List<ItemValidado> comCambio = ResolutorCambio.resolverLista(idsVerificados, cambio);
         List<ItemNormalizado> normalizados = Normalizador.normalizarLista(comCambio);
-        List<ItemAvaliado> avaliados = AvaliadorRegrasIndividuais.avaliarLista(normalizados, envelope);
+
+        TabelaPoliticaResolvida tabelaResolvida = ResolutorPoliticaCentroCusto.resolver(
+                envelope.getColaboradorCentroCusto(), politica);
+        List<ItemAvaliado> avaliados = AvaliadorRegrasIndividuais.avaliarLista(
+                normalizados, envelope, tabelaResolvida, politica);
 
         List<ItemAvaliado> aprovados = SeletorElegiveis.selecionar(avaliados);
         List<ItemAvaliado> aposDuplicidade = DetectorDuplicidadeEconomica.detectar(aprovados);
