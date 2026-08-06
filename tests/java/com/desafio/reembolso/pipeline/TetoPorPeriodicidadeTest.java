@@ -23,6 +23,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -109,6 +110,99 @@ class TetoPorPeriodicidadeTest {
                 .flatMap(r -> r.motivos().stream())
                 .anyMatch(m -> m.regra() == RegraNegocio.RN_011 || m.regra() == RegraNegocio.RN_012);
         assertFalse(usouMotivoHistorico, "representacao nunca usa RN-011/RN-012");
+    }
+
+    // ---- 1b. CA-049 — estacionamento (DIARIA) usa AgregadorTetoIndividual -----
+
+    @Test
+    @DisplayName("1b — CA-049: estacionamento (limite 50.00, DIARIA) via AgregadorTetoIndividual; nao participa do AgregadorTetoDiario")
+    void estacionamentoDiaria_usaAgregadorTetoIndividual() {
+        TabelaPoliticaResolvida tabela = tabelaCentroCusto("CC-COMERCIAL",
+                Map.of("estacionamento", cat("50.00", Periodicidade.DIARIA)));
+
+        ItemAvaliado item = itemElegivel(1, DATA_A, "estacionamento", "80.00");
+
+        List<ResultadoTeto> resultadosIndividual = AgregadorTetoIndividual.aplicar(List.of(item), tabela);
+
+        assertEquals(1, resultadosIndividual.size());
+        ResultadoTeto resultado = resultadosIndividual.get(0);
+        assertMonetario("50.00", resultado.valorReembolsavel());
+        assertEquals(Decisao.PARCIALMENTE_REEMBOLSADO, resultado.decisao());
+        assertEquals(1, resultado.motivos().size());
+        Motivo motivo = resultado.motivos().get(0);
+        assertEquals(MotivoCodigo.TETO_INDIVIDUAL_APLICADO, motivo.codigo());
+        assertEquals(RegraNegocio.RN_019, motivo.regra());
+        assertNull(motivo.campo());
+        assertNotEquals(MotivoCodigo.TETO_HOSPEDAGEM_APLICADO, motivo.codigo());
+        assertNotEquals(RegraNegocio.RN_013, motivo.regra());
+
+        List<ResultadoTeto> resultadosDiario = AgregadorTetoDiario.aplicar(List.of(item), tabela);
+        assertTrue(resultadosDiario.isEmpty(),
+                "estacionamento com periodicidade DIARIA nao participa do teto diario compartilhado");
+    }
+
+    // ---- 1c. hospedagem reconfigurada com DIA usa AgregadorTetoDiario ---------
+
+    @Test
+    @DisplayName("1c — hospedagem reconfigurada com DIA usa teto compartilhado (AgregadorTetoDiario), TETO_DIARIO_APLICADO/RN-019")
+    void hospedagemDia_usaAgregadorTetoDiarioCompartilhado() {
+        TabelaPoliticaResolvida tabela = tabelaCentroCusto("CC-ENG-PLATAFORMA",
+                Map.of("hospedagem", cat("300.00", Periodicidade.DIA)));
+
+        ItemAvaliado item1 = itemElegivel(1, DATA_A, "hospedagem", "220.00");
+        ItemAvaliado item2 = itemElegivel(2, DATA_A, "hospedagem", "150.00");
+
+        List<ResultadoTeto> resultados = AgregadorTetoDiario.aplicar(List.of(item1, item2), tabela);
+
+        assertEquals(2, resultados.size());
+
+        ResultadoTeto resultado1 = resultados.get(0);
+        assertMonetario("220.00", resultado1.valorReembolsavel());
+        assertEquals(Decisao.INTEGRALMENTE_REEMBOLSADO, resultado1.decisao());
+        assertTrue(resultado1.motivos().isEmpty());
+
+        ResultadoTeto resultado2 = resultados.get(1);
+        assertMonetario("80.00", resultado2.valorReembolsavel());
+        assertEquals(Decisao.PARCIALMENTE_REEMBOLSADO, resultado2.decisao());
+        assertEquals(1, resultado2.motivos().size());
+        Motivo motivo = resultado2.motivos().get(0);
+        assertEquals(MotivoCodigo.TETO_DIARIO_APLICADO, motivo.codigo());
+        assertEquals(RegraNegocio.RN_019, motivo.regra());
+        assertNull(motivo.campo());
+        assertNotEquals(MotivoCodigo.TETO_HOSPEDAGEM_APLICADO, motivo.codigo());
+        assertNotEquals(RegraNegocio.RN_013, motivo.regra());
+
+        List<ResultadoTeto> resultadosIndividual = AgregadorTetoIndividual.aplicar(List.of(item1, item2), tabela);
+        assertTrue(resultadosIndividual.isEmpty(), "hospedagem com periodicidade DIA nao participa do teto individual");
+    }
+
+    // ---- 1d. alimentacao reconfigurada com DIARIA usa AgregadorTetoIndividual -
+
+    @Test
+    @DisplayName("1d — alimentacao reconfigurada com DIARIA usa teto individual (AgregadorTetoIndividual), TETO_INDIVIDUAL_APLICADO/RN-019")
+    void alimentacaoDiaria_usaAgregadorTetoIndividual() {
+        TabelaPoliticaResolvida tabela = tabelaCentroCusto("CC-COMERCIAL",
+                Map.of("alimentacao", cat("60.00", Periodicidade.DIARIA)));
+
+        ItemAvaliado item = itemElegivel(1, DATA_A, "alimentacao", "80.00");
+
+        List<ResultadoTeto> resultadosIndividual = AgregadorTetoIndividual.aplicar(List.of(item), tabela);
+
+        assertEquals(1, resultadosIndividual.size());
+        ResultadoTeto resultado = resultadosIndividual.get(0);
+        assertMonetario("60.00", resultado.valorReembolsavel());
+        assertEquals(Decisao.PARCIALMENTE_REEMBOLSADO, resultado.decisao());
+        assertEquals(1, resultado.motivos().size());
+        Motivo motivo = resultado.motivos().get(0);
+        assertEquals(MotivoCodigo.TETO_INDIVIDUAL_APLICADO, motivo.codigo());
+        assertEquals(RegraNegocio.RN_019, motivo.regra());
+        assertNull(motivo.campo());
+        assertNotEquals(MotivoCodigo.TETO_DIARIO_APLICADO, motivo.codigo());
+        assertNotEquals(RegraNegocio.RN_011, motivo.regra());
+
+        List<ResultadoTeto> resultadosDiario = AgregadorTetoDiario.aplicar(List.of(item), tabela);
+        assertTrue(resultadosDiario.isEmpty(),
+                "alimentacao com periodicidade DIARIA nao participa do teto diario compartilhado");
     }
 
     // ---- 2. Consumo por indiceEntrada ------------------------------------------

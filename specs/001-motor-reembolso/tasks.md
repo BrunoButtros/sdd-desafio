@@ -1106,7 +1106,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
   - **Commit sugerido:** `feat(T-044): cria AgregadorTetoIndividual para periodicidade diaria`
   - **Status:** [x] concluída
 
-- [ ] **T-045** — `TetoPorPeriodicidadeTest` — categoria externa sob cada periodicidade
+- [x] **T-045** — `TetoPorPeriodicidadeTest` — categoria externa sob cada periodicidade
   - **O que faz:** completa a prova de que o mecanismo de teto depende exclusivamente da `periodicidade` declarada na política, não do nome histórico da categoria (AMB-036), reunindo na mesma classe `TetoPorPeriodicidadeTest` os **quatro** cenários que demonstram essa independência: `representacao` com `periodicidade: "dia"`; `estacionamento` com `periodicidade: "diaria"`; `hospedagem` reconfigurada com `periodicidade: "dia"` — usa o teto **compartilhado** de `AgregadorTetoDiario` (`TETO_DIARIO_APLICADO`/`TETO_DIARIO_ESGOTADO`, `regra = RN_019`, não `RN_013`); `alimentacao` reconfigurada com `periodicidade: "diaria"` — usa o teto **individual** de `AgregadorTetoIndividual` (`TETO_INDIVIDUAL_APLICADO`, `regra = RN_019`, não `RN_011`). O cenário de `estacionamento` é efetivamente **acrescentado** a `TetoPorPeriodicidadeTest` nesta task — mesmo já existindo cobertura unitária semelhante em `AgregadorTetoIndividualTest` (T-044), essa cobertura vive numa classe diferente e não substitui a comprovação cruzada exigida aqui, onde os quatro cenários precisam existir lado a lado na mesma classe para demonstrar a independência do mecanismo em relação ao nome da categoria.
   - **RN atendidas:** RN-019.
   - **CA atendidos:** CA-047 e CA-049 — comprovação cruzada de que o algoritmo é escolhido pela periodicidade, não pelo nome da categoria.
@@ -1127,7 +1127,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
     mvn -q test -Dtest=TetoPorPeriodicidadeTest
     ```
   - **Commit sugerido:** `test(T-045): prova que o mecanismo de teto depende de periodicidade, nao do nome da categoria`
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 - [ ] **T-046** — Wiring dos agregadores por periodicidade no `Main`
   - **O que faz:** `Main.executarPipeline` passa a chamar as novas sobrecargas de `AgregadorTetoDiario.aplicar(elegiveis, tabelaResolvida)` e `AgregadorTetoIndividual.aplicar(elegiveis, tabelaResolvida)`, em vez de `AgregadorTetoDiario`(antigo)/`AgregadorTetoHospedagem` — usando a mesma `TabelaPoliticaResolvida` já calculada em T-042. Como esta task é o ponto em que os dois agregadores novos passam a ser efetivamente exercitados pelo `Main` real, `CliContratoTest` precisa exercer os **dois** caminhos (`"dia"` e `"diaria"`) **por `Main.run(...)`**, não só o cenário de recusa por limite zero já coberto. Estratégia de dados fechada, sem alternativa: nenhum fixture permanente novo é criado em `tests/resources` — `CliContratoTest` usa `@TempDir`; a política e o envelope de cada um dos dois cenários novos (`representacao`/`"dia"` e `estacionamento`/`"diaria"`) são escritos em arquivos temporários pelo próprio teste, dentro do `@TempDir`; `--output` também aponta para um arquivo dentro do `@TempDir`; `--cambio` usa `exemplos/envelope/cambio.json` (arquivo real já existente, mesmo quando o cenário não tem despesa em moeda estrangeira). A execução real do JAR empacotado continua pertencendo exclusivamente a T-054 — esta task só usa `Main.run(...)` in-process.
