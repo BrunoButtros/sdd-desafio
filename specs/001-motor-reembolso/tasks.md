@@ -865,7 +865,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
 
 ### Bloco E — Campo `despesa.moeda`
 
-- [ ] **T-036** — `validarMoeda` em `ValidadorItem`
+- [x] **T-036** — `validarMoeda` em `ValidadorItem`
   - **O que faz:** implementa a validação do sétimo campo do contrato (spec 4.2, RN-002, DT-014): chave `moeda` ausente do objeto → `"BRL"`, sem motivo; chave presente com valor `null` → `CAMPO_AUSENTE`; tipo não textual → `CAMPO_TIPO_INVALIDO`; texto fora de `[A-Z]{3}` → `CAMPO_FORMATO_INVALIDO` (sem trim, sem conversão de caixa). A responsabilidade de `ValidadorItem` é **exclusivamente** popular `ItemValidado.moeda` — nunca os três campos derivados de câmbio. Em **todo** caminho de produção de `ValidadorItem` (objeto válido, objeto com campos inválidos, e elemento que não é objeto), o construtor de catorze argumentos (T-029) passa a ser chamado explicitamente com `taxaCambioAplicada = null`, `dataCotacaoUtilizada = null` e `valorConvertidoBruto = null` — **inclusive para BRL**, informado ou assumido por ausência de chave: só `ResolutorCambio` (T-037) preenche os três derivados, mesmo para BRL (`taxaCambioAplicada = 1`, `valorConvertidoBruto = valor`). Para o elemento que **não é objeto** (`ITEM_TIPO_INVALIDO`), os quatro campos ficam todos nulos — `moeda = null`, `taxaCambioAplicada = null`, `dataCotacaoUtilizada = null`, `valorConvertidoBruto = null` —, nunca `"BRL"`, porque não há despesa estruturada da qual inferir moeda alguma (spec 4.2, tabela de "Elemento que não é objeto"). O construtor de dez argumentos criado em T-029 permanece existindo, mas **exclusivamente como compatibilidade para os testes históricos** (T-001 a T-021) que ainda o chamam diretamente — `ValidadorItem` não volta a usá-lo depois desta task.
   - **RN atendidas:** RN-002 (7º campo).
   - **CA atendidos:** CA-048.
@@ -887,7 +887,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
     mvn -q test -Dtest=CampoMoedaTest
     ```
   - **Commit sugerido:** `feat(T-036): implementa validarMoeda com uso exclusivo do construtor de catorze argumentos`
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 ---
 

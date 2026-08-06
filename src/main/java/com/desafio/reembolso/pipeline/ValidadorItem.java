@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
  * item (spec 4.2, RN-002), atribuindo {@code indiceEntrada} (base 1, antes
  * de qualquer validação) e classificando cada defeito estrutural na ordem
  * canônica de contrato: id, data, categoria, descricao, fornecedor, valor,
- * tem_nota_fiscal. Um item inválido não interrompe o processamento dos
+ * moeda, tem_nota_fiscal. Um item inválido não interrompe o processamento dos
  * demais (DT-005). Cada campo tipado só é preenchido quando passa
  * integralmente na validação estrutural — sem coerção via acessores
  * permissivos do Jackson. Não realiza normalização, deduplicação ou
@@ -36,6 +36,7 @@ public final class ValidadorItem {
             .ofPattern("uuuu-MM-dd")
             .withResolverStyle(ResolverStyle.STRICT);
     private static final Pattern PADRAO_DATA = Pattern.compile("\\d{4}-\\d{2}-\\d{2}");
+    private static final Pattern PADRAO_MOEDA = Pattern.compile("[A-Z]{3}");
 
     private ValidadorItem() {
     }
@@ -58,7 +59,7 @@ public final class ValidadorItem {
         if (elemento == null || elemento.getNodeType() != JsonNodeType.OBJECT) {
             Motivo motivo = new Motivo(MotivoCodigo.ITEM_TIPO_INVALIDO, RegraNegocio.RN_002, null);
             return new ItemValidado(indiceEntrada, null, null, null, null, null, null, null, null,
-                    List.of(motivo));
+                    List.of(motivo), null, null, null, null);
         }
 
         List<Motivo> motivos = new ArrayList<>();
@@ -69,12 +70,13 @@ public final class ValidadorItem {
         String descricao = validarTexto(elemento, "descricao", CampoCanonico.DESCRICAO, true, motivos);
         String fornecedor = validarTexto(elemento, "fornecedor", CampoCanonico.FORNECEDOR, true, motivos);
         BigDecimal valor = validarValor(elemento, motivos);
+        String moeda = validarMoeda(elemento, motivos);
         Boolean temNotaFiscal = validarBooleano(elemento, motivos);
 
         JsonNode valorInformado = extrairValorInformado(elemento);
 
         return new ItemValidado(indiceEntrada, id, data, categoria, descricao, fornecedor, valor,
-                temNotaFiscal, valorInformado, motivos);
+                temNotaFiscal, valorInformado, motivos, moeda, null, null, null);
     }
 
     private static String validarTexto(JsonNode elemento, String chave, CampoCanonico campo,
@@ -131,6 +133,27 @@ public final class ValidadorItem {
         }
         // Zero e negativos são estruturalmente válidos (4.2) — sem checagem de formato aqui.
         return valor.decimalValue();
+    }
+
+    private static String validarMoeda(JsonNode elemento, List<Motivo> motivos) {
+        JsonNode valor = elemento.get("moeda");
+        if (valor == null) {
+            return "BRL";
+        }
+        if (valor.isNull()) {
+            motivos.add(campoAusente(CampoCanonico.MOEDA));
+            return null;
+        }
+        if (valor.getNodeType() != JsonNodeType.STRING) {
+            motivos.add(campoTipoInvalido(CampoCanonico.MOEDA));
+            return null;
+        }
+        String texto = valor.asText();
+        if (!PADRAO_MOEDA.matcher(texto).matches()) {
+            motivos.add(campoFormatoInvalido(CampoCanonico.MOEDA));
+            return null;
+        }
+        return texto;
     }
 
     private static Boolean validarBooleano(JsonNode elemento, List<Motivo> motivos) {
