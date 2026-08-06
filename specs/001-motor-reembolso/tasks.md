@@ -1214,7 +1214,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
   - **Commit sugerido:** `feat(T-048): estende ResultadoItem com campos de cambio e migra construtores diretos`
   - **Status:** [x] concluída
 
-- [ ] **T-049** — Serializar campos de câmbio em `EscritorResultado` e migrar o fixture histórico para o schema 1.2
+- [x] **T-049** — Serializar campos de câmbio em `EscritorResultado` e migrar o fixture histórico para o schema 1.2
   - **O que faz:** `EscritorResultado.registro(...)` passa a escrever `moeda`, `taxa_cambio_aplicada` e `data_cotacao_utilizada` no JSON de saída, entre `valor_informado` e `valor_normalizado` (spec 4.3). `taxa_cambio_aplicada` é sempre número JSON (nunca texto), preservando a precisão do arquivo de câmbio. Como a saída real passa a ter três campos que `tests/resources/fixtures/despesas-exemplo-esperado.json` (T-020) ainda não conhece, este mesmo fixture é atualizado **manualmente** nesta task — nunca gerado pelo próprio motor — para incluir os três campos novos nas 14 posições, conforme o contrato de 4.3 (BRL em todas: `moeda: "BRL"`, `taxa_cambio_aplicada: 1`, `data_cotacao_utilizada: null`, já que `exemplos/despesas-exemplo.json` não tem despesas em moeda estrangeira). Nenhuma decisão, valor reembolsável ou motivo histórico muda — só o schema de auditoria ganha os três campos da spec 1.2.
   - **RN atendidas:** RN-017 (atualizada).
   - **CA atendidos:** CA-034 (nível de serialização); confirma CA-001/CA-002/CA-003 sob o schema 1.2.
@@ -1236,7 +1236,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
     mvn -q test "-Dtest=EscritorResultadoTest,ExemploCompletoTest"
     ```
   - **Commit sugerido:** `feat(T-049): serializa campos de cambio e migra fixture historico para o schema 1.2`
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 ---
 

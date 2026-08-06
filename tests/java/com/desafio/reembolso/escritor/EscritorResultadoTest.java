@@ -72,6 +72,21 @@ class EscritorResultadoTest {
                 valorNormalizado, valorReembolsavel, decisao, motivos);
     }
 
+    /**
+     * Helper com foco cambial: recebe explicitamente {@code moeda},
+     * {@code taxaCambioAplicada} e {@code dataCotacaoUtilizada}, em vez de
+     * assumir os valores fixos de BRL do helper histórico {@link
+     * #resultado}.
+     */
+    private static ResultadoItem resultadoComCambio(int indice, String id, JsonNode valorInformado,
+                                                      String moeda, BigDecimal taxaCambioAplicada,
+                                                      LocalDate dataCotacaoUtilizada,
+                                                      BigDecimal valorNormalizado, BigDecimal valorReembolsavel,
+                                                      Decisao decisao, List<Motivo> motivos) {
+        return new ResultadoItem(indice, id, valorInformado, moeda, taxaCambioAplicada, dataCotacaoUtilizada,
+                valorNormalizado, valorReembolsavel, decisao, motivos);
+    }
+
     private static Motivo motivo(MotivoCodigo codigo, RegraNegocio regra, CampoCanonico campo) {
         return new Motivo(codigo, regra, campo);
     }
@@ -185,8 +200,8 @@ class EscritorResultadoTest {
     // ---- 4. Registro completo por item ---------------------------------------------
 
     @Test
-    @DisplayName("4 — cada registro de resultados tem exatamente os sete campos, nesta ordem")
-    void registroPorItem_seteCamposNaOrdem() {
+    @DisplayName("4 — cada registro de resultados tem exatamente os dez campos, nesta ordem")
+    void registroPorItem_dezCamposNaOrdem() {
         Envelope envelope = envelopePadrao();
         ResultadoItem item = resultado(1, "d-001", DecimalNode.valueOf(new BigDecimal("60.00")),
                 new BigDecimal("60.00"), new BigDecimal("60.00"), Decisao.INTEGRALMENTE_REEMBOLSADO, List.of());
@@ -194,8 +209,9 @@ class EscritorResultadoTest {
         String json = EscritorResultado.serializar(envelope, List.of(item), new BigDecimal("60.00"));
         JsonNode registro = ler(json).get("resultados").get(0);
 
-        assertEquals(List.of("indice_entrada", "id", "valor_informado", "valor_normalizado",
-                "valor_reembolsavel", "decisao", "motivos"), nomesDeCampo(registro));
+        assertEquals(List.of("indice_entrada", "id", "valor_informado", "moeda", "taxa_cambio_aplicada",
+                "data_cotacao_utilizada", "valor_normalizado", "valor_reembolsavel", "decisao", "motivos"),
+                nomesDeCampo(registro));
     }
 
     // ---- 5. Valor 60.00 -------------------------------------------------------------
@@ -650,5 +666,175 @@ class EscritorResultadoTest {
         String json = EscritorResultado.serializar(envelope, resultados, total);
 
         assertMonetarioExato(json, "total_reembolsavel", "80.00");
+    }
+
+    // ---- 21. Câmbio cenário 1 — BRL válido -------------------------------------------
+
+    @Test
+    @DisplayName("21 — câmbio cenário 1: BRL válido — moeda string \"BRL\", taxa número JSON 1, data nula")
+    void cambioCenario1_brlValido() {
+        Envelope envelope = envelopePadrao();
+        ResultadoItem item = resultadoComCambio(1, "d-001", DecimalNode.valueOf(new BigDecimal("30.00")),
+                "BRL", BigDecimal.ONE, null, new BigDecimal("30.00"), new BigDecimal("30.00"),
+                Decisao.INTEGRALMENTE_REEMBOLSADO, List.of());
+
+        String json = EscritorResultado.serializar(envelope, List.of(item), new BigDecimal("30.00"));
+        JsonNode registro = ler(json).get("resultados").get(0);
+
+        assertTrue(registro.get("moeda").isTextual());
+        assertEquals("BRL", registro.get("moeda").asText());
+        assertTrue(registro.get("taxa_cambio_aplicada").isNumber());
+        assertFalse(registro.get("taxa_cambio_aplicada").isTextual());
+        assertEquals(0, BigDecimal.ONE.compareTo(registro.get("taxa_cambio_aplicada").decimalValue()));
+        assertTrue(registro.has("data_cotacao_utilizada"));
+        assertTrue(registro.get("data_cotacao_utilizada").isNull());
+    }
+
+    // ---- 22. Câmbio cenário 2 — moeda estrangeira com cotação exata -------------------
+
+    @Test
+    @DisplayName("22 — câmbio cenário 2: EUR com cotação exata — moeda \"EUR\", taxa numérica, data \"2026-07-10\"")
+    void cambioCenario2_eurComCotacaoExata() {
+        Envelope envelope = envelopePadrao();
+        ResultadoItem item = resultadoComCambio(1, "d-001", DecimalNode.valueOf(new BigDecimal("40.00")),
+                "EUR", new BigDecimal("6.00"), LocalDate.of(2026, 7, 10),
+                new BigDecimal("240.00"), new BigDecimal("240.00"),
+                Decisao.INTEGRALMENTE_REEMBOLSADO, List.of());
+
+        String json = EscritorResultado.serializar(envelope, List.of(item), new BigDecimal("240.00"));
+        JsonNode registro = ler(json).get("resultados").get(0);
+
+        assertEquals("EUR", registro.get("moeda").asText());
+        assertTrue(registro.get("taxa_cambio_aplicada").isNumber());
+        assertEquals(0, new BigDecimal("6.00").compareTo(registro.get("taxa_cambio_aplicada").decimalValue()));
+        assertEquals("2026-07-10", registro.get("data_cotacao_utilizada").asText());
+    }
+
+    // ---- 23. Câmbio cenário 3 — cotação anterior resolvida -----------------------------
+
+    @Test
+    @DisplayName("23 — câmbio cenário 3: cotação anterior resolvida — data exata \"2026-07-17\", taxa preserva precisão 5.9600")
+    void cambioCenario3_cotacaoAnteriorResolvida() {
+        Envelope envelope = envelopePadrao();
+        ResultadoItem item = resultadoComCambio(1, "d-001", DecimalNode.valueOf(new BigDecimal("30.00")),
+                "EUR", new BigDecimal("5.9600"), LocalDate.of(2026, 7, 17),
+                new BigDecimal("178.80"), new BigDecimal("178.80"),
+                Decisao.INTEGRALMENTE_REEMBOLSADO, List.of());
+
+        String json = EscritorResultado.serializar(envelope, List.of(item), new BigDecimal("178.80"));
+        JsonNode registro = ler(json).get("resultados").get(0);
+
+        assertEquals("2026-07-17", registro.get("data_cotacao_utilizada").asText());
+        assertEquals(0, new BigDecimal("5.9600").compareTo(registro.get("taxa_cambio_aplicada").decimalValue()));
+        assertMonetarioExato(json, "taxa_cambio_aplicada", "5.9600");
+    }
+
+    // ---- 24. Câmbio cenário 4 — moeda estruturalmente inválida -------------------------
+
+    @Test
+    @DisplayName("24 — câmbio cenário 4: moeda estruturalmente inválida — as três chaves existem com valor JSON nulo")
+    void cambioCenario4_moedaEstruturalmenteInvalida() {
+        Envelope envelope = envelopePadrao();
+        ResultadoItem item = resultadoComCambio(1, "d-001", ler("\"usd\""),
+                null, null, null,
+                null, new BigDecimal("0.00"), Decisao.RECUSADO,
+                List.of(motivo(MotivoCodigo.CAMPO_FORMATO_INVALIDO, RegraNegocio.RN_002, CampoCanonico.MOEDA)));
+
+        String json = EscritorResultado.serializar(envelope, List.of(item), new BigDecimal("0.00"));
+        JsonNode registro = ler(json).get("resultados").get(0);
+
+        assertTrue(registro.has("moeda"));
+        assertTrue(registro.get("moeda").isNull());
+        assertTrue(registro.has("taxa_cambio_aplicada"));
+        assertTrue(registro.get("taxa_cambio_aplicada").isNull());
+        assertTrue(registro.has("data_cotacao_utilizada"));
+        assertTrue(registro.get("data_cotacao_utilizada").isNull());
+    }
+
+    // ---- 25. Câmbio cenário 5 — moeda válida sem cotação --------------------------------
+
+    @Test
+    @DisplayName("25 — câmbio cenário 5: GBP sem cotação — moeda preservada, taxa/data/normalizado nulos, motivo MOEDA_SEM_COTACAO")
+    void cambioCenario5_moedaValidaSemCotacao() {
+        Envelope envelope = envelopePadrao();
+        ResultadoItem item = resultadoComCambio(1, "d-001", DecimalNode.valueOf(new BigDecimal("30.00")),
+                "GBP", null, null,
+                null, new BigDecimal("0.00"), Decisao.RECUSADO,
+                List.of(motivo(MotivoCodigo.MOEDA_SEM_COTACAO, RegraNegocio.RN_020, CampoCanonico.MOEDA)));
+
+        String json = EscritorResultado.serializar(envelope, List.of(item), new BigDecimal("0.00"));
+        JsonNode registro = ler(json).get("resultados").get(0);
+
+        assertEquals("GBP", registro.get("moeda").asText());
+        assertTrue(registro.get("taxa_cambio_aplicada").isNull());
+        assertTrue(registro.get("data_cotacao_utilizada").isNull());
+        assertTrue(registro.get("valor_normalizado").isNull());
+        assertMonetarioExato(json, "valor_reembolsavel", "0.00");
+
+        JsonNode motivosNode = registro.get("motivos");
+        assertEquals(1, motivosNode.size());
+        assertEquals("MOEDA_SEM_COTACAO", motivosNode.get(0).get("codigo").asText());
+        assertEquals("RN-020", motivosNode.get(0).get("regra").asText());
+        assertEquals("despesa.moeda", motivosNode.get(0).get("campo").asText());
+    }
+
+    // ---- 26 a 29. Precisão e formato de taxa_cambio_aplicada ----------------------------
+
+    @Test
+    @DisplayName("26 — taxa_cambio_aplicada nunca aparece entre aspas")
+    void taxaCambioAplicada_nuncaComoString() {
+        Envelope envelope = envelopePadrao();
+        ResultadoItem item = resultadoComCambio(1, "d-001", null,
+                "EUR", new BigDecimal("6.00"), LocalDate.of(2026, 7, 10),
+                new BigDecimal("240.00"), new BigDecimal("240.00"),
+                Decisao.INTEGRALMENTE_REEMBOLSADO, List.of());
+
+        String json = EscritorResultado.serializar(envelope, List.of(item), new BigDecimal("240.00"));
+
+        assertFalse(json.contains("\"taxa_cambio_aplicada\":\"6.00\""));
+        assertMonetarioExato(json, "taxa_cambio_aplicada", "6.00");
+    }
+
+    @Test
+    @DisplayName("27 — taxa_cambio_aplicada nunca em notação científica, mesmo a partir de BigDecimal(\"1E+3\")")
+    void taxaCambioAplicada_semNotacaoCientifica() {
+        Envelope envelope = envelopePadrao();
+        ResultadoItem item = resultadoComCambio(1, "d-001", null,
+                "USD", new BigDecimal("1E+3"), LocalDate.of(2026, 7, 10),
+                new BigDecimal("1000.00"), new BigDecimal("1000.00"),
+                Decisao.INTEGRALMENTE_REEMBOLSADO, List.of());
+
+        String json = EscritorResultado.serializar(envelope, List.of(item), new BigDecimal("1000.00"));
+
+        assertFalse(json.toUpperCase().contains("E+3"));
+        assertFalse(json.toUpperCase().contains("E3"));
+        assertMonetarioExato(json, "taxa_cambio_aplicada", "1000");
+    }
+
+    @Test
+    @DisplayName("28 — taxa_cambio_aplicada não é forçada a duas casas: BigDecimal.ONE aparece como 1, nunca 1.00")
+    void taxaCambioAplicada_naoForcadaADuasCasas() {
+        Envelope envelope = envelopePadrao();
+        ResultadoItem item = resultado(1, "d-001", null, new BigDecimal("30.00"), new BigDecimal("30.00"),
+                Decisao.INTEGRALMENTE_REEMBOLSADO, List.of());
+
+        String json = EscritorResultado.serializar(envelope, List.of(item), new BigDecimal("30.00"));
+
+        assertMonetarioExato(json, "taxa_cambio_aplicada", "1");
+        assertFalse(json.contains("\"taxa_cambio_aplicada\":1.00"));
+    }
+
+    @Test
+    @DisplayName("29 — BigDecimal com precisão adicional na taxa não é convertido para double: preserva todas as casas")
+    void taxaCambioAplicada_precisaoNaoConvertidaParaDouble() {
+        Envelope envelope = envelopePadrao();
+        ResultadoItem item = resultadoComCambio(1, "d-001", null,
+                "USD", new BigDecimal("1.010025"), LocalDate.of(2026, 7, 10),
+                new BigDecimal("1.01"), new BigDecimal("1.01"),
+                Decisao.INTEGRALMENTE_REEMBOLSADO, List.of());
+
+        String json = EscritorResultado.serializar(envelope, List.of(item), new BigDecimal("1.01"));
+
+        assertMonetarioExato(json, "taxa_cambio_aplicada", "1.010025");
     }
 }

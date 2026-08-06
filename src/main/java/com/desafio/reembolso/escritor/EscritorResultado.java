@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 
@@ -80,11 +81,18 @@ public final class EscritorResultado {
     private static ObjectNode registro(ResultadoItem resultado) {
         BigDecimal valorNormalizado = resultado.valorNormalizado();
         JsonNode valorInformado = resultado.valorInformado();
+        BigDecimal taxaCambioAplicada = resultado.taxaCambioAplicada();
+        LocalDate dataCotacaoUtilizada = resultado.dataCotacaoUtilizada();
 
         ObjectNode no = MAPPER.createObjectNode();
         no.put("indice_entrada", resultado.indiceEntrada());
         no.put("id", resultado.id());
         no.set("valor_informado", valorInformado == null ? null : valorInformado.deepCopy());
+        no.put("moeda", resultado.moeda());
+        no.set("taxa_cambio_aplicada",
+                taxaCambioAplicada == null ? null : MAPPER.getNodeFactory().numberNode(taxaCambioAplicada));
+        no.put("data_cotacao_utilizada",
+                dataCotacaoUtilizada == null ? null : dataCotacaoUtilizada.toString());
         no.put("valor_normalizado",
                 valorNormalizado == null ? null : monetario(valorNormalizado, "valor_normalizado"));
         no.put("valor_reembolsavel", monetario(resultado.valorReembolsavel(), "valor_reembolsavel"));
