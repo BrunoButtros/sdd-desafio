@@ -1,0 +1,151 @@
+{
+  "colaborador": {
+    "id": "c-0912",
+    "nome": "Rafael Nkemelu",
+    "centro_custo": "CC-COMERCIAL"
+  },
+  "periodo": {
+    "competencia": "2026-07",
+    "inicio": "2026-07-01",
+    "fim": "2026-07-31"
+  },
+  "resultados": [
+    {
+      "indice_entrada": 1,
+      "id": "e-001",
+      "valor_informado": 340,
+      "moeda": "BRL",
+      "taxa_cambio_aplicada": 1,
+      "data_cotacao_utilizada": null,
+      "valor_normalizado": 340.00,
+      "valor_reembolsavel": 300.00,
+      "decisao": "PARCIALMENTE_REEMBOLSADO",
+      "motivos": [
+        { "codigo": "TETO_DIARIO_APLICADO", "regra": "RN-019", "campo": null }
+      ]
+    },
+    {
+      "indice_entrada": 2,
+      "id": "e-002",
+      "valor_informado": 22,
+      "moeda": "EUR",
+      "taxa_cambio_aplicada": 5.93,
+      "data_cotacao_utilizada": "2026-07-14",
+      "valor_normalizado": 130.46,
+      "valor_reembolsavel": 90.00,
+      "decisao": "PARCIALMENTE_REEMBOLSADO",
+      "motivos": [
+        { "codigo": "TETO_DIARIO_APLICADO", "regra": "RN-011", "campo": null }
+      ]
+    },
+    {
+      "indice_entrada": 3,
+      "id": "e-003",
+      "valor_informado": 14.5,
+      "moeda": "EUR",
+      "taxa_cambio_aplicada": 5.88,
+      "data_cotacao_utilizada": "2026-07-15",
+      "valor_normalizado": 85.26,
+      "valor_reembolsavel": 85.26,
+      "decisao": "INTEGRALMENTE_REEMBOLSADO",
+      "motivos": []
+    },
+    {
+      "indice_entrada": 4,
+      "id": "e-004",
+      "valor_informado": 30,
+      "moeda": "EUR",
+      "taxa_cambio_aplicada": 5.96,
+      "data_cotacao_utilizada": "2026-07-17",
+      "valor_normalizado": 178.80,
+      "valor_reembolsavel": 90.00,
+      "decisao": "PARCIALMENTE_REEMBOLSADO",
+      "motivos": [
+        { "codigo": "TETO_DIARIO_APLICADO", "regra": "RN-011", "campo": null }
+      ]
+    },
+    {
+      "indice_entrada": 5,
+      "id": "e-005",
+      "valor_informado": 40,
+      "moeda": "USD",
+      "taxa_cambio_aplicada": 5.50,
+      "data_cotacao_utilizada": "2026-07-20",
+      "valor_normalizado": 220.00,
+      "valor_reembolsavel": 0.00,
+      "decisao": "RECUSADO",
+      "motivos": [
+        { "codigo": "NOTA_FISCAL_AUSENTE", "regra": "RN-009", "campo": null }
+      ]
+    },
+    {
+      "indice_entrada": 6,
+      "id": "e-006",
+      "valor_informado": 55,
+      "moeda": "GBP",
+      "taxa_cambio_aplicada": null,
+      "data_cotacao_utilizada": null,
+      "valor_normalizado": null,
+      "valor_reembolsavel": 0.00,
+      "decisao": "RECUSADO",
+      "motivos": [
+        { "codigo": "MOEDA_SEM_COTACAO", "regra": "RN-020", "campo": "despesa.moeda" }
+      ]
+    },
+    {
+      "indice_entrada": 7,
+      "id": "e-007",
+      "valor_informado": 1200,
+      "moeda": "BRL",
+      "taxa_cambio_aplicada": 1,
+      "data_cotacao_utilizada": null,
+      "valor_normalizado": 1200.00,
+      "valor_reembolsavel": 400.00,
+      "decisao": "PARCIALMENTE_REEMBOLSADO",
+      "motivos": [
+        { "codigo": "TETO_HOSPEDAGEM_APLICADO", "regra": "RN-013", "campo": null }
+      ]
+    },
+    {
+      "indice_entrada": 8,
+      "id": "e-008",
+      "valor_informado": 95,
+      "moeda": "BRL",
+      "taxa_cambio_aplicada": 1,
+      "data_cotacao_utilizada": null,
+      "valor_normalizado": 95.00,
+      "valor_reembolsavel": 90.00,
+      "decisao": "PARCIALMENTE_REEMBOLSADO",
+      "motivos": [
+        { "codigo": "TETO_DIARIO_APLICADO", "regra": "RN-011", "campo": null }
+      ]
+    },
+    {
+      "indice_entrada": 9,
+      "id": "e-009",
+      "valor_informado": 120,
+      "moeda": "BRL",
+      "taxa_cambio_aplicada": 1,
+      "data_cotacao_utilizada": null,
+      "valor_normalizado": 120.00,
+      "valor_reembolsavel": 0.00,
+      "decisao": "RECUSADO",
+      "motivos": [
+        { "codigo": "CATEGORIA_NAO_REEMBOLSAVEL_CENTRO_CUSTO", "regra": "RN-019", "campo": null }
+      ]
+    },
+    {
+      "indice_entrada": 10,
+      "id": "e-010",
+      "valor_informado": 88,
+      "moeda": "BRL",
+      "taxa_cambio_aplicada": 1,
+      "data_cotacao_utilizada": null,
+      "valor_normalizado": 88.00,
+      "valor_reembolsavel": 88.00,
+      "decisao": "INTEGRALMENTE_REEMBOLSADO",
+      "motivos": []
+    }
+  ],
+  "total_reembolsavel": 1143.26
+}

@@ -1288,7 +1288,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
   - **Commit sugerido:** `test(T-051): regressao da politica v4 sobre CC-ENG-PLATAFORMA — total 351,43`
   - **Status:** [x] concluída
 
-- [ ] **T-052** — Integração envelope — Rafael / `CC-COMERCIAL` — R$1.143,26
+- [x] **T-052** — Integração envelope — Rafael / `CC-COMERCIAL` — R$1.143,26
   - **O que faz:** processa `exemplos/envelope/despesas-envelope.json` (Rafael Nkemelu, `CC-COMERCIAL`) com `exemplos/envelope/politica-v4.json` e `exemplos/envelope/cambio.json` reais, confirmando `total_reembolsavel = 1143.26` (CA-039), comparado estruturalmente contra um fixture manual construído a partir da tabela de `spec.md` §12.3 (os dez itens `e-001` a `e-010`, incluindo as três conversões cambiais e o motivo `CATEGORIA_NAO_REEMBOLSAVEL_CENTRO_CUSTO` de `e-009`).
   - **RN atendidas:** RN-019, RN-020.
   - **CA atendidos:** CA-039.
@@ -1307,7 +1307,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
     mvn -q test -Dtest=IntegracaoEnvelopeTest
     ```
   - **Commit sugerido:** `test(T-052): integra despesas-envelope.json (Rafael/CC-COMERCIAL) — total 1.143,26`
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 - [ ] **T-053** — Integração envelope — Dani / centro de custo desconhecido — R$373,76
   - **O que faz:** processa `exemplos/envelope/despesas-envelope-cc-desconhecido.json` (Dani Okonkwo, `CC-SUPORTE-N2`, fora da tabela) com `exemplos/envelope/politica-v4.json` e `exemplos/envelope/cambio.json` reais, confirmando `total_reembolsavel = 373.76` (CA-040), comparado estruturalmente contra um fixture manual construído a partir de `spec.md` §12.4 (quatro itens `f-001` a `f-004`, todos sob a política `padrao`).
