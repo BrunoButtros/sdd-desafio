@@ -989,7 +989,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
 
 ### Bloco G — Política por centro de custo
 
-- [ ] **T-040** — Implementar `ResolutorPoliticaCentroCusto`
+- [x] **T-040** — Implementar `ResolutorPoliticaCentroCusto`
   - **O que faz:** cria `ResolutorPoliticaCentroCusto.resolver(String centroCusto, PoliticaExterna politica): TabelaPoliticaResolvida` (RN-019, DT-011, DT-016): `centroCusto == null` (já representando ausência/nulo/tipo inválido, reduzidos pela camada de envelope) ou não presente em `politica.centrosCusto` → resolve para `padrao`; presente → resolve exclusivamente para a tabela daquele centro. Comparação textual exata (`Map.get`, sem `trim`/`toLowerCase`/normalização de acento) — nunca a união das duas tabelas.
   - **RN atendidas:** RN-019.
   - **CA atendidos:** CA-024, CA-025, CA-026, CA-027.
@@ -1009,7 +1009,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
     mvn -q test -Dtest=ResolutorPoliticaCentroCustoTest
     ```
   - **Commit sugerido:** `feat(T-040): implementa ResolutorPoliticaCentroCusto`
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 - [ ] **T-041** — `AvaliadorRegrasIndividuais` consome política externa
   - **O que faz:** acrescenta a `AvaliadorRegrasIndividuais` uma nova sobrecarga que recebe `TabelaPoliticaResolvida` e `PoliticaExterna` (para o gatilho de nota fiscal, RN-009 atualizada) e avalia categoria **exclusivamente** a partir da tabela resolvida — nunca a partir do `Set<String> CATEGORIAS_REEMBOLSAVEIS` fixo do Dia 1, que não reconhece categorias dinâmicas como `representacao`. Regra fechada da nova sobrecarga: categoria ausente da tabela + `origem == PADRAO` → `CATEGORIA_FORA_POLITICA`/`RN-007`; categoria ausente da tabela + `origem == CENTRO_CUSTO` → `CATEGORIA_NAO_REEMBOLSAVEL_CENTRO_CUSTO`/`RN-019`; categoria presente com `configuracao.limite() == 0` → `CATEGORIA_NAO_REEMBOLSAVEL_CENTRO_CUSTO`/`RN-019` (só ocorre com `origem == CENTRO_CUSTO`, porque `padrao` com limite zero já foi rejeitado na leitura, T-030); categoria presente com limite positivo → nenhum motivo de categoria. Uma categoria dinâmica válida, presente na tabela resolvida com limite positivo (ex.: `representacao` em `CC-COMERCIAL`), nunca pode ser recusada pelo conjunto histórico fixo, porque a nova sobrecarga não o consulta. Como o método histórico `avaliarRn006ERn007` mistura RN-006 e RN-007 e consulta `CATEGORIAS_REEMBOLSAVEIS` internamente, a nova sobrecarga **não** o chama — ele permanece exclusivo das sobrecargas históricas (`avaliar(item)`, `avaliar(item, envelope)`), preservadas intactas para a suíte de T-006 a T-021 (migração para T-055). Um método novo e separado — `avaliarRn006(...)`, ou nome semântico equivalente — copia os motivos já existentes do item e avalia **somente** `VALOR_NAO_POSITIVO`, sem consultar `CATEGORIAS_REEMBOLSAVEIS` e sem produzir `RN-007`; a categoria é decidida integralmente pela lógica de `TabelaPoliticaResolvida` descrita acima, dentro da própria nova sobrecarga. Esta task também **fecha** a coexistência de motivos que T-039 deixou pendente: com o avaliador de centro de custo agora existindo, um item com `MOEDA_SEM_COTACAO` **e** categoria ausente da tabela de um centro de custo cadastrado coexiste com `CATEGORIA_NAO_REEMBOLSAVEL_CENTRO_CUSTO`, pelo mesmo princípio de 8.4 item 14 — categoria e competência não dependem de `valor_normalizado`, então continuam avaliadas normalmente mesmo quando o câmbio falha.
