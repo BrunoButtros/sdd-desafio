@@ -962,7 +962,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
   - **Commit sugerido:** `feat(T-038): normaliza sobre valorConvertidoBruto e integra ResolutorCambio no pipeline`
   - **Status:** [x] concluída
 
-- [ ] **T-039** — `MoedaSemCotacaoTest` — coexistência de motivos (8.4, item 14)
+- [x] **T-039** — `MoedaSemCotacaoTest` — coexistência de motivos (8.4, item 14)
   - **O que faz:** confirma, **operacionalmente**, a exclusão de dependência declarada em `spec.md` 8.4 item 14, no ponto do backlog em que esta task acontece — **antes** de a política por centro de custo estar integrada ao avaliador (Bloco G, T-040/T-041). Nesta altura do backlog, T-039 ainda utiliza os agregadores e sobrecargas históricas (`SeletorElegiveis`, `DetectorDuplicidadeEconomica`, `AgregadorTetoDiario`, `AgregadorTetoHospedagem`), porque os componentes novos dos blocos G e H ainda não foram implementados. Para os cenários de coexistência de motivos individuais, o teste executa até `AvaliadorRegrasIndividuais` — mas, para comprovar ausência de duplicidade e de teto, o teste **continua** pelos estágios reais: `SeletorElegiveis` → `DetectorDuplicidadeEconomica` → `SeletorElegiveis` → `AgregadorTetoDiario`/`AgregadorTetoHospedagem`. Um item com `MOEDA_SEM_COTACAO` pode coexistir com `CATEGORIA_FORA_POLITICA` e/ou `FORA_COMPETENCIA` (produzidos pela sobrecarga histórica de `AvaliadorRegrasIndividuais`, que não dependem de `valor_normalizado`), mas **nunca** recebe `VALOR_NAO_POSITIVO`, `NOTA_FISCAL_AUSENTE`, `DUPLICIDADE` ou qualquer motivo de teto — e essas ausências são comprovadas fazendo o item atravessar de fato os estágios reais de seleção, duplicidade e agregação, não apenas inspecionando a lista de motivos parada em `AvaliadorRegrasIndividuais`. Esta task **não** cobre a coexistência com `CATEGORIA_NAO_REEMBOLSAVEL_CENTRO_CUSTO` — esse motivo só existe a partir de T-041; a coexistência com ele é fechada em T-041, depois que o avaliador de centro de custo passar a existir.
   - **RN atendidas:** RN-020.
   - **CA atendidos:** base de rastreabilidade para o item 14 de 8.4 (não tem CA numerado próprio — é comportamento de composição, já coberto indiretamente por CA-030 e pelos cenários de `§12.3`/`§12.4`).
@@ -983,7 +983,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
     mvn -q test -Dtest=MoedaSemCotacaoTest
     ```
   - **Commit sugerido:** `test(T-039): comprova coexistencia e exclusao de motivos com MOEDA_SEM_COTACAO` — único commit da task; se um defeito real exigir correção, a mensagem passa a `fix(T-039)`, sem um segundo commit `test(T-039)` depois.
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 ---
 
