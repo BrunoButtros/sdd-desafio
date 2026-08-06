@@ -1084,7 +1084,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
   - **Commit sugerido:** `feat(T-043): generaliza AgregadorTetoDiario por periodicidade`
   - **Status:** [x] concluída
 
-- [ ] **T-044** — Criar `AgregadorTetoIndividual`
+- [x] **T-044** — Criar `AgregadorTetoIndividual`
   - **O que faz:** cria `pipeline/AgregadorTetoIndividual.java`, que processa qualquer categoria com `periodicidade == DIARIA` na tabela resolvida (não só `hospedagem`): teto individual por lançamento, sem saldo compartilhado, reaproveitando `AgregadorTetoDiario.aplicarCorte(...)`. `hospedagem` produz `TETO_HOSPEDAGEM_APLICADO`/`RN_013`; qualquer outra categoria produz `TETO_INDIVIDUAL_APLICADO`/`RN_019` (AMB-037). `AgregadorTetoHospedagem.java` **não é removido** nesta task — continua existindo e sendo usado pela suíte histórica até T-055/T-056.
   - **RN atendidas:** RN-013, RN-019.
   - **CA atendidos:** CA-049.
@@ -1104,7 +1104,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
     mvn -q test -Dtest=AgregadorTetoIndividualTest
     ```
   - **Commit sugerido:** `feat(T-044): cria AgregadorTetoIndividual para periodicidade diaria`
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 - [ ] **T-045** — `TetoPorPeriodicidadeTest` — categoria externa sob cada periodicidade
   - **O que faz:** completa a prova de que o mecanismo de teto depende exclusivamente da `periodicidade` declarada na política, não do nome histórico da categoria (AMB-036), reunindo na mesma classe `TetoPorPeriodicidadeTest` os **quatro** cenários que demonstram essa independência: `representacao` com `periodicidade: "dia"`; `estacionamento` com `periodicidade: "diaria"`; `hospedagem` reconfigurada com `periodicidade: "dia"` — usa o teto **compartilhado** de `AgregadorTetoDiario` (`TETO_DIARIO_APLICADO`/`TETO_DIARIO_ESGOTADO`, `regra = RN_019`, não `RN_013`); `alimentacao` reconfigurada com `periodicidade: "diaria"` — usa o teto **individual** de `AgregadorTetoIndividual` (`TETO_INDIVIDUAL_APLICADO`, `regra = RN_019`, não `RN_011`). O cenário de `estacionamento` é efetivamente **acrescentado** a `TetoPorPeriodicidadeTest` nesta task — mesmo já existindo cobertura unitária semelhante em `AgregadorTetoIndividualTest` (T-044), essa cobertura vive numa classe diferente e não substitui a comprovação cruzada exigida aqui, onde os quatro cenários precisam existir lado a lado na mesma classe para demonstrar a independência do mecanismo em relação ao nome da categoria.
