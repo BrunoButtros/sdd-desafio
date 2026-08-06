@@ -1242,7 +1242,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
 
 ### Bloco J — Regressões e integração
 
-- [ ] **T-050** — Fixture externa de política histórica + regressão R$585,43
+- [x] **T-050** — Fixture externa de política histórica + regressão R$585,43
   - **O que faz:** cria `tests/resources/fixtures/politica-historica.json` (equivalente aos valores hardcoded pré-Dia 2: `alimentacao` R$60/dia, `transporte_urbano` R$80/dia, `hospedagem` R$250/diária, `nota_fiscal_obrigatoria_acima_de` R$100, `vigencia` qualquer data real válida) e `tests/resources/fixtures/cambio-historico.json` (um `cambio.json` mínimo/vazio, já que `despesas-exemplo.json` não tem despesas em moeda estrangeira). Processa `exemplos/despesas-exemplo.json` de ponta a ponta com esses dois arquivos externos, invocando **definitivamente** `Main.run(...)` — não `executarPipeline` diretamente, porque o objetivo desta task é testar a cadeia inteira (leitores, parser de CLI, pipeline e escritor) sob política e câmbio externos reais, não só o núcleo isolado — e confirma `total_reembolsavel = 585.43` (CA-037), comparando estruturalmente contra `tests/resources/fixtures/despesas-exemplo-esperado.json`, **já migrado para o schema 1.2 em T-049**: esta task reutiliza esse fixture tal como T-049 o deixou, sem alterá-lo de novo.
   - **RN atendidas:** RN-019 (confirmação de que a política externa equivalente reproduz o comportamento histórico).
   - **CA atendidos:** CA-037.
@@ -1263,7 +1263,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
     mvn -q test -Dtest=RegressaoHistoricaTest
     ```
   - **Commit sugerido:** `test(T-050): fixture de politica historica e regressao dos 585,43`
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 - [ ] **T-051** — Regressão política v4 / `CC-ENG-PLATAFORMA` — R$351,43
   - **O que faz:** processa o mesmo `exemplos/despesas-exemplo.json` com `politica-v4.json` real e um envelope cujo `colaborador.centro_custo` é `"CC-ENG-PLATAFORMA"` (cadastrado na tabela), confirmando `total_reembolsavel = 351.43` (CA-038) e as quatro mudanças de item declaradas em `spec.md` §12.2 (`d-001` integral `72,50`; `d-002` parcial `2,50`; `d-010` recusado `0,00`/`CATEGORIA_NAO_REEMBOLSAVEL_CENTRO_CUSTO`; `d-014` integral `61,00`), comparado estruturalmente contra um fixture novo escrito manualmente a partir de §12.2.
