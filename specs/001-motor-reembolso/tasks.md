@@ -839,7 +839,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
   - **Commit sugerido:** `feat(T-034): reescreve parser da CLI para quatro flags obrigatorias e migra consumidores historicos de Main.run`
   - **Status:** [x] concluída
 
-- [ ] **T-035** — `Main.java`: carregar e validar política e câmbio antes do envelope
+- [x] **T-035** — `Main.java`: carregar e validar política e câmbio antes do envelope
   - **O que faz:** `Main.run(...)` passa a chamar `LeitorPolitica.ler(politicaPath)` e `LeitorCambio.ler(cambioPath)` **antes** de ler e validar o envelope de despesas (spec 8.1, passo 1 antes do passo 2) — qualquer `PoliticaInvalidaException`/`CambioInvalidoException` retorna exit `2`, sem sequer abrir o arquivo de entrada. A própria construção dos `Path` (`Path.of(politicaPath)`, `Path.of(cambioPath)`, e também `Path.of(inputPath)`/`Path.of(outputPath)`) acontece **dentro** do mesmo bloco protegido — `Path.of(...)` pode lançar `InvalidPathException` quando o texto recebido não é um caminho válido no sistema operacional (ex.: caracteres proibidos no Windows), e esse cenário é tratado exatamente como as demais falhas de arquivo: exit `2`, mensagem apenas em stderr, stdout vazio, e um `--output` preexistente preservado intacto (nenhuma tentativa de escrita ocorre antes da validação de política/câmbio). Os objetos `PoliticaExterna`/`TabelaCambio` resultantes ainda não são usados pelo pipeline de regras nesta task (isso começa em T-038/T-042/T-046) — aqui o objetivo é só o contrato de execução (AMB-034) e a ordem de validação.
   - **RN atendidas:** RN-021, RN-022.
   - **CA atendidos:** CA-043, CA-044.
@@ -859,7 +859,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
     mvn -q test "-Dtest=CliContratoTest,EscritaAtomicaSaidaTest"
     ```
   - **Commit sugerido:** `feat(T-035): carrega politica e cambio antes do envelope na CLI`
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 ---
 

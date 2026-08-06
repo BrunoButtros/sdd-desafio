@@ -172,6 +172,94 @@ class EscritaAtomicaSaidaTest {
         assertNenhumTemporarioNoDiretorio(tempDir);
     }
 
+    // ---- 6. Política inválida preserva output preexistente (T-035) -----------
+
+    @Test
+    @DisplayName("6 — política estruturalmente inválida preserva um --output preexistente")
+    void politicaInvalida_preservaOutputPreexistente(@TempDir Path tempDir) throws IOException {
+        Path input = tempDir.resolve("valido.json");
+        Files.writeString(input, jsonEnvelopeValido(), StandardCharsets.UTF_8);
+        Path output = tempDir.resolve("resultado.json");
+        escreverOutputPreexistente(output);
+        Path politicaInvalida = tempDir.resolve("politica-sem-padrao.json");
+        Files.writeString(politicaInvalida, """
+                {
+                  "vigencia": "2026-07-01",
+                  "moeda_base": "BRL",
+                  "nota_fiscal_obrigatoria_acima_de": 100
+                }
+                """, StandardCharsets.UTF_8);
+
+        Resultado resultado = executar(
+                "calcular", "--input", input.toString(), "--output", output.toString(),
+                "--politica", politicaInvalida.toString(), "--cambio", CAMBIO);
+
+        assertEquals(2, resultado.codigo);
+        assertEquals(CONTEUDO_PREEXISTENTE, Files.readString(output, StandardCharsets.UTF_8));
+        assertNenhumTemporarioNoDiretorio(tempDir);
+    }
+
+    // ---- 7. Câmbio inválido preserva output preexistente (T-035) -------------
+
+    @Test
+    @DisplayName("7 — câmbio estruturalmente inválido preserva um --output preexistente")
+    void cambioInvalido_preservaOutputPreexistente(@TempDir Path tempDir) throws IOException {
+        Path input = tempDir.resolve("valido.json");
+        Files.writeString(input, jsonEnvelopeValido(), StandardCharsets.UTF_8);
+        Path output = tempDir.resolve("resultado.json");
+        escreverOutputPreexistente(output);
+        Path cambioInvalido = tempDir.resolve("cambio-sem-taxas.json");
+        Files.writeString(cambioInvalido, """
+                {
+                  "moeda_base": "BRL"
+                }
+                """, StandardCharsets.UTF_8);
+
+        Resultado resultado = executar(
+                "calcular", "--input", input.toString(), "--output", output.toString(),
+                "--politica", POLITICA, "--cambio", cambioInvalido.toString());
+
+        assertEquals(2, resultado.codigo);
+        assertEquals(CONTEUDO_PREEXISTENTE, Files.readString(output, StandardCharsets.UTF_8));
+        assertNenhumTemporarioNoDiretorio(tempDir);
+    }
+
+    // ---- 8. InvalidPathException em --politica/--cambio preserva output (T-035)
+
+    @Test
+    @DisplayName("8 — InvalidPathException em --politica preserva um --output preexistente")
+    void politicaInvalidPathException_preservaOutputPreexistente(@TempDir Path tempDir) throws IOException {
+        Path input = tempDir.resolve("valido.json");
+        Files.writeString(input, jsonEnvelopeValido(), StandardCharsets.UTF_8);
+        Path output = tempDir.resolve("resultado.json");
+        escreverOutputPreexistente(output);
+
+        Resultado resultado = executar(
+                "calcular", "--input", input.toString(), "--output", output.toString(),
+                "--politica", "politica\u0000invalida.json", "--cambio", CAMBIO);
+
+        assertEquals(2, resultado.codigo);
+        assertEquals(CONTEUDO_PREEXISTENTE, Files.readString(output, StandardCharsets.UTF_8));
+        assertNenhumTemporarioNoDiretorio(tempDir);
+    }
+
+    @Test
+    @DisplayName("9 — InvalidPathException em --cambio preserva um --output preexistente")
+    void cambioInvalidPathException_preservaOutputPreexistente(@TempDir Path tempDir) throws IOException {
+        Path input = tempDir.resolve("valido.json");
+        Files.writeString(input, jsonEnvelopeValido(), StandardCharsets.UTF_8);
+        Path output = tempDir.resolve("resultado.json");
+        escreverOutputPreexistente(output);
+
+        Resultado resultado = executar(
+                "calcular", "--input", input.toString(), "--output", output.toString(),
+                "--politica", POLITICA, "--cambio", "cambio\u0000invalido.json");
+
+        assertEquals(2, resultado.codigo);
+        assertEquals(CONTEUDO_PREEXISTENTE, Files.readString(output, StandardCharsets.UTF_8));
+        assertNenhumTemporarioNoDiretorio(tempDir);
+    }
+
     // ---- 5. Nenhum temporário permanece após sucesso sem output preexistente -
 
     @Test

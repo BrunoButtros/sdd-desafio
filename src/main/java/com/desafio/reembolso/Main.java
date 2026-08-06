@@ -1,6 +1,10 @@
 package com.desafio.reembolso;
 
 import com.desafio.reembolso.escritor.EscritorResultado;
+import com.desafio.reembolso.leitor.LeitorCambio;
+import com.desafio.reembolso.leitor.LeitorCambio.CambioInvalidoException;
+import com.desafio.reembolso.leitor.LeitorPolitica;
+import com.desafio.reembolso.leitor.LeitorPolitica.PoliticaInvalidaException;
 import com.desafio.reembolso.leitor.ValidadorEnvelope;
 import com.desafio.reembolso.leitor.ValidadorEnvelope.EnvelopeInvalidoException;
 import com.desafio.reembolso.modelo.Envelope;
@@ -29,6 +33,7 @@ import java.io.PrintStream;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.LinkedHashMap;
@@ -113,7 +118,29 @@ public final class Main {
         String politicaPath = opcoes.get("--politica");
         String cambioPath = opcoes.get("--cambio");
 
-        Path input = Path.of(inputPath);
+        Path input;
+        Path output;
+        Path politica;
+        Path cambio;
+        try {
+            input = Path.of(inputPath);
+            output = Path.of(outputPath);
+            politica = Path.of(politicaPath);
+            cambio = Path.of(cambioPath);
+
+            LeitorPolitica.ler(politica);
+            LeitorCambio.ler(cambio);
+        } catch (InvalidPathException e) {
+            err.println("Caminho inválido: " + e.getMessage());
+            return 2;
+        } catch (PoliticaInvalidaException e) {
+            err.println("Política inválida: " + e.getMessage());
+            return 2;
+        } catch (CambioInvalidoException e) {
+            err.println("Câmbio inválido: " + e.getMessage());
+            return 2;
+        }
+
         if (!Files.isRegularFile(input)) {
             err.println("Arquivo de entrada não encontrado: " + inputPath);
             return 2;
@@ -150,7 +177,6 @@ public final class Main {
         BigDecimal total = SomadorTotal.somar(resultados);
         String json = EscritorResultado.serializar(envelope, resultados, total);
 
-        Path output = Path.of(outputPath);
         try {
             escreverAtomicamente(output, json);
         } catch (IOException e) {

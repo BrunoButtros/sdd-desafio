@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
@@ -383,6 +384,318 @@ class CliContratoTest {
                 "stderr deveria conter 'JSON de entrada sintaticamente inválido', mas foi: " + resultado.stderr);
         assertEquals("", resultado.stdout);
         assertFalse(Files.exists(output), "--output não deve ser criado quando há tokens extras após a raiz JSON");
+    }
+
+    // ---- Validação de --politica antes do envelope (T-035) ---------------
+
+    private static String envelopeValidoInline() {
+        return """
+                {
+                  "periodo": { "inicio": "2026-07-01", "fim": "2026-07-31" },
+                  "despesas": []
+                }
+                """;
+    }
+
+    private static final String POLITICA_SEM_PADRAO = """
+            {
+              "vigencia": "2026-07-01",
+              "moeda_base": "BRL",
+              "nota_fiscal_obrigatoria_acima_de": 100
+            }
+            """;
+
+    private static final String CAMBIO_SEM_TAXAS = """
+            {
+              "moeda_base": "BRL"
+            }
+            """;
+
+    private static final String CONTEUDO_OUTPUT_PREEXISTENTE = "{\"resultado\":\"preexistente\"}";
+
+    private static void escreverOutputPreexistente(Path output) throws IOException {
+        Files.writeString(output, CONTEUDO_OUTPUT_PREEXISTENTE, StandardCharsets.UTF_8);
+    }
+
+    private static void assertOutputPreexistentePreservado(Path output) throws IOException {
+        assertEquals(CONTEUDO_OUTPUT_PREEXISTENTE, Files.readString(output, StandardCharsets.UTF_8),
+                "--output preexistente deveria permanecer intacto byte a byte");
+    }
+
+    @Test
+    @DisplayName("--politica apontando para arquivo inexistente retorna exit 2, mesmo com --input válido")
+    void politicaArquivoInexistente(@TempDir Path tempDir) throws Exception {
+        Path input = tempDir.resolve("entrada.json");
+        Files.writeString(input, envelopeValidoInline(), StandardCharsets.UTF_8);
+        Path output = tempDir.resolve("resultado.json");
+        escreverOutputPreexistente(output);
+        Path politicaInexistente = tempDir.resolve("politica-nao-existe.json");
+
+        Resultado resultado = executar(
+                "calcular",
+                "--input", input.toString(),
+                "--output", output.toString(),
+                "--politica", politicaInexistente.toString(),
+                "--cambio", CAMBIO);
+
+        assertEquals(2, resultado.codigo);
+        assertEquals("", resultado.stdout);
+        assertFalse(resultado.stderr.isBlank(), "stderr deveria conter mensagem de erro");
+        assertOutputPreexistentePreservado(output);
+    }
+
+    @Test
+    @DisplayName("--politica apontando para diretório (caminho ilegível) retorna exit 2")
+    void politicaCaminhoIlegivel(@TempDir Path tempDir) throws Exception {
+        Path input = tempDir.resolve("entrada.json");
+        Files.writeString(input, envelopeValidoInline(), StandardCharsets.UTF_8);
+        Path output = tempDir.resolve("resultado.json");
+        escreverOutputPreexistente(output);
+        Path diretorioComoPolitica = tempDir.resolve("diretorio-politica");
+        Files.createDirectory(diretorioComoPolitica);
+
+        Resultado resultado = executar(
+                "calcular",
+                "--input", input.toString(),
+                "--output", output.toString(),
+                "--politica", diretorioComoPolitica.toString(),
+                "--cambio", CAMBIO);
+
+        assertEquals(2, resultado.codigo);
+        assertEquals("", resultado.stdout);
+        assertFalse(resultado.stderr.isBlank(), "stderr deveria conter mensagem de erro");
+        assertOutputPreexistentePreservado(output);
+    }
+
+    @Test
+    @DisplayName("--politica com JSON sintaticamente inválido retorna exit 2")
+    void politicaJsonSintaticamenteInvalido(@TempDir Path tempDir) throws Exception {
+        Path input = tempDir.resolve("entrada.json");
+        Files.writeString(input, envelopeValidoInline(), StandardCharsets.UTF_8);
+        Path output = tempDir.resolve("resultado.json");
+        escreverOutputPreexistente(output);
+        Path politicaInvalida = tempDir.resolve("politica-invalida.json");
+        Files.writeString(politicaInvalida, "{ \"vigencia\": ", StandardCharsets.UTF_8);
+
+        Resultado resultado = executar(
+                "calcular",
+                "--input", input.toString(),
+                "--output", output.toString(),
+                "--politica", politicaInvalida.toString(),
+                "--cambio", CAMBIO);
+
+        assertEquals(2, resultado.codigo);
+        assertEquals("", resultado.stdout);
+        assertFalse(resultado.stderr.isBlank(), "stderr deveria conter mensagem de erro");
+        assertOutputPreexistentePreservado(output);
+    }
+
+    @Test
+    @DisplayName("--politica estruturalmente inválida retorna exit 2")
+    void politicaEstruturalmenteInvalida(@TempDir Path tempDir) throws Exception {
+        Path input = tempDir.resolve("entrada.json");
+        Files.writeString(input, envelopeValidoInline(), StandardCharsets.UTF_8);
+        Path output = tempDir.resolve("resultado.json");
+        escreverOutputPreexistente(output);
+        Path politicaInvalida = tempDir.resolve("politica-sem-padrao.json");
+        Files.writeString(politicaInvalida, POLITICA_SEM_PADRAO, StandardCharsets.UTF_8);
+
+        Resultado resultado = executar(
+                "calcular",
+                "--input", input.toString(),
+                "--output", output.toString(),
+                "--politica", politicaInvalida.toString(),
+                "--cambio", CAMBIO);
+
+        assertEquals(2, resultado.codigo);
+        assertEquals("", resultado.stdout);
+        assertFalse(resultado.stderr.isBlank(), "stderr deveria conter mensagem de erro");
+        assertOutputPreexistentePreservado(output);
+    }
+
+    @Test
+    @DisplayName("--politica com texto que causa InvalidPathException retorna exit 2")
+    void politicaCausaInvalidPathException(@TempDir Path tempDir) throws Exception {
+        Path input = tempDir.resolve("entrada.json");
+        Files.writeString(input, envelopeValidoInline(), StandardCharsets.UTF_8);
+        Path output = tempDir.resolve("resultado.json");
+        escreverOutputPreexistente(output);
+
+        Resultado resultado = executar(
+                "calcular",
+                "--input", input.toString(),
+                "--output", output.toString(),
+                "--politica", "politica\u0000invalida.json",
+                "--cambio", CAMBIO);
+
+        assertEquals(2, resultado.codigo);
+        assertEquals("", resultado.stdout);
+        assertFalse(resultado.stderr.isBlank(), "stderr deveria conter mensagem de erro");
+        assertOutputPreexistentePreservado(output);
+    }
+
+    // ---- Validação de --cambio antes do envelope (T-035) ------------------
+
+    @Test
+    @DisplayName("--cambio apontando para arquivo inexistente retorna exit 2, mesmo com --input válido")
+    void cambioArquivoInexistente(@TempDir Path tempDir) throws Exception {
+        Path input = tempDir.resolve("entrada.json");
+        Files.writeString(input, envelopeValidoInline(), StandardCharsets.UTF_8);
+        Path output = tempDir.resolve("resultado.json");
+        escreverOutputPreexistente(output);
+        Path cambioInexistente = tempDir.resolve("cambio-nao-existe.json");
+
+        Resultado resultado = executar(
+                "calcular",
+                "--input", input.toString(),
+                "--output", output.toString(),
+                "--politica", POLITICA,
+                "--cambio", cambioInexistente.toString());
+
+        assertEquals(2, resultado.codigo);
+        assertEquals("", resultado.stdout);
+        assertFalse(resultado.stderr.isBlank(), "stderr deveria conter mensagem de erro");
+        assertOutputPreexistentePreservado(output);
+    }
+
+    @Test
+    @DisplayName("--cambio apontando para diretório (caminho ilegível) retorna exit 2")
+    void cambioCaminhoIlegivel(@TempDir Path tempDir) throws Exception {
+        Path input = tempDir.resolve("entrada.json");
+        Files.writeString(input, envelopeValidoInline(), StandardCharsets.UTF_8);
+        Path output = tempDir.resolve("resultado.json");
+        escreverOutputPreexistente(output);
+        Path diretorioComoCambio = tempDir.resolve("diretorio-cambio");
+        Files.createDirectory(diretorioComoCambio);
+
+        Resultado resultado = executar(
+                "calcular",
+                "--input", input.toString(),
+                "--output", output.toString(),
+                "--politica", POLITICA,
+                "--cambio", diretorioComoCambio.toString());
+
+        assertEquals(2, resultado.codigo);
+        assertEquals("", resultado.stdout);
+        assertFalse(resultado.stderr.isBlank(), "stderr deveria conter mensagem de erro");
+        assertOutputPreexistentePreservado(output);
+    }
+
+    @Test
+    @DisplayName("--cambio com JSON sintaticamente inválido retorna exit 2")
+    void cambioJsonSintaticamenteInvalido(@TempDir Path tempDir) throws Exception {
+        Path input = tempDir.resolve("entrada.json");
+        Files.writeString(input, envelopeValidoInline(), StandardCharsets.UTF_8);
+        Path output = tempDir.resolve("resultado.json");
+        escreverOutputPreexistente(output);
+        Path cambioInvalido = tempDir.resolve("cambio-invalido.json");
+        Files.writeString(cambioInvalido, "{ \"moeda_base\": ", StandardCharsets.UTF_8);
+
+        Resultado resultado = executar(
+                "calcular",
+                "--input", input.toString(),
+                "--output", output.toString(),
+                "--politica", POLITICA,
+                "--cambio", cambioInvalido.toString());
+
+        assertEquals(2, resultado.codigo);
+        assertEquals("", resultado.stdout);
+        assertFalse(resultado.stderr.isBlank(), "stderr deveria conter mensagem de erro");
+        assertOutputPreexistentePreservado(output);
+    }
+
+    @Test
+    @DisplayName("--cambio estruturalmente inválido retorna exit 2")
+    void cambioEstruturalmenteInvalido(@TempDir Path tempDir) throws Exception {
+        Path input = tempDir.resolve("entrada.json");
+        Files.writeString(input, envelopeValidoInline(), StandardCharsets.UTF_8);
+        Path output = tempDir.resolve("resultado.json");
+        escreverOutputPreexistente(output);
+        Path cambioInvalido = tempDir.resolve("cambio-sem-taxas.json");
+        Files.writeString(cambioInvalido, CAMBIO_SEM_TAXAS, StandardCharsets.UTF_8);
+
+        Resultado resultado = executar(
+                "calcular",
+                "--input", input.toString(),
+                "--output", output.toString(),
+                "--politica", POLITICA,
+                "--cambio", cambioInvalido.toString());
+
+        assertEquals(2, resultado.codigo);
+        assertEquals("", resultado.stdout);
+        assertFalse(resultado.stderr.isBlank(), "stderr deveria conter mensagem de erro");
+        assertOutputPreexistentePreservado(output);
+    }
+
+    @Test
+    @DisplayName("--cambio com texto que causa InvalidPathException retorna exit 2")
+    void cambioCausaInvalidPathException(@TempDir Path tempDir) throws Exception {
+        Path input = tempDir.resolve("entrada.json");
+        Files.writeString(input, envelopeValidoInline(), StandardCharsets.UTF_8);
+        Path output = tempDir.resolve("resultado.json");
+        escreverOutputPreexistente(output);
+
+        Resultado resultado = executar(
+                "calcular",
+                "--input", input.toString(),
+                "--output", output.toString(),
+                "--politica", POLITICA,
+                "--cambio", "cambio\u0000invalido.json");
+
+        assertEquals(2, resultado.codigo);
+        assertEquals("", resultado.stdout);
+        assertFalse(resultado.stderr.isBlank(), "stderr deveria conter mensagem de erro");
+        assertOutputPreexistentePreservado(output);
+    }
+
+    // ---- Ordem de validação: política/câmbio antes do input (T-035) -------
+
+    @Test
+    @DisplayName("política é validada antes do input: --input inexistente + --politica inválida prevalece a falha de política")
+    void ordemValidacao_politicaAntesDeInput(@TempDir Path tempDir) throws Exception {
+        Path inputInexistente = tempDir.resolve("nao-existe.json");
+        Path output = tempDir.resolve("resultado.json");
+        Path politicaInvalida = tempDir.resolve("politica-sem-padrao.json");
+        Files.writeString(politicaInvalida, POLITICA_SEM_PADRAO, StandardCharsets.UTF_8);
+
+        Resultado resultado = executar(
+                "calcular",
+                "--input", inputInexistente.toString(),
+                "--output", output.toString(),
+                "--politica", politicaInvalida.toString(),
+                "--cambio", CAMBIO);
+
+        assertEquals(2, resultado.codigo);
+        assertEquals("", resultado.stdout);
+        assertFalse(resultado.stderr.contains("Arquivo de entrada não encontrado"),
+                "a falha deveria vir da política, e o input ainda não deveria ter sido consultado, mas stderr foi: "
+                        + resultado.stderr);
+        assertFalse(Files.exists(output));
+    }
+
+    @Test
+    @DisplayName("política é validada antes do câmbio: ambos inválidos, prevalece a falha de política")
+    void ordemValidacao_politicaAntesDeCambio(@TempDir Path tempDir) throws Exception {
+        Path input = tempDir.resolve("entrada.json");
+        Files.writeString(input, envelopeValidoInline(), StandardCharsets.UTF_8);
+        Path output = tempDir.resolve("resultado.json");
+        Path politicaInvalida = tempDir.resolve("politica-sem-padrao.json");
+        Files.writeString(politicaInvalida, POLITICA_SEM_PADRAO, StandardCharsets.UTF_8);
+        Path cambioInvalido = tempDir.resolve("cambio-sem-taxas.json");
+        Files.writeString(cambioInvalido, CAMBIO_SEM_TAXAS, StandardCharsets.UTF_8);
+
+        Resultado resultado = executar(
+                "calcular",
+                "--input", input.toString(),
+                "--output", output.toString(),
+                "--politica", politicaInvalida.toString(),
+                "--cambio", cambioInvalido.toString());
+
+        assertEquals(2, resultado.codigo);
+        assertEquals("", resultado.stdout);
+        assertTrue(resultado.stderr.contains("Política inválida"),
+                "a falha deveria vir da política antes do câmbio, mas stderr foi: " + resultado.stderr);
+        assertFalse(Files.exists(output));
     }
 
     @Test
