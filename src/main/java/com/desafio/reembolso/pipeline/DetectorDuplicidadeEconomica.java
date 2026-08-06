@@ -13,13 +13,14 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Detecta duplicidade econômica (spec RN-010, CA-013, CA-014) entre itens
- * elegíveis: mesma {@code data}, categoria normalizada, valor normalizado,
- * fornecedor e descrição como recebidos ({@code despesa.id} e
- * {@code tem_nota_fiscal} não integram a chave). A ocorrência de menor
- * {@code indiceEntrada} por chave permanece elegível; as demais recebem
- * {@code DUPLICIDADE}. Itens já inelegíveis, se recebidos diretamente, são
- * preservados sem alteração e não participam da chave (8.4.11).
+ * Detecta duplicidade econômica (spec RN-010, CA-013, CA-014, CA-033) entre
+ * itens elegíveis: mesma {@code data}, categoria normalizada, {@code moeda},
+ * valor normalizado (já convertido para BRL), fornecedor e descrição como
+ * recebidos ({@code despesa.id} e {@code tem_nota_fiscal} não integram a
+ * chave). A ocorrência de menor {@code indiceEntrada} por chave permanece
+ * elegível; as demais recebem {@code DUPLICIDADE}. Itens já inelegíveis, se
+ * recebidos diretamente, são preservados sem alteração e não participam da
+ * chave (8.4.11).
  */
 public final class DetectorDuplicidadeEconomica {
 
@@ -59,6 +60,7 @@ public final class DetectorDuplicidadeEconomica {
         return new ChaveDuplicidade(
                 item.itemNormalizado().item().getData(),
                 item.itemNormalizado().categoriaNormalizada(),
+                item.itemNormalizado().item().getMoeda(),
                 item.itemNormalizado().valorNormalizado(),
                 item.itemNormalizado().item().getFornecedor(),
                 item.itemNormalizado().item().getDescricao()
@@ -76,6 +78,7 @@ public final class DetectorDuplicidadeEconomica {
     private record ChaveDuplicidade(
             LocalDate data,
             String categoriaNormalizada,
+            String moeda,
             BigDecimal valorNormalizado,
             String fornecedor,
             String descricao

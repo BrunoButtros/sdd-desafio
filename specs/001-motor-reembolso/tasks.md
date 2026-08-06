@@ -1160,7 +1160,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
 
 ### Bloco I — Duplicidade e saída
 
-- [ ] **T-047** — Estender `DetectorDuplicidadeEconomica` com `moeda` na chave
+- [x] **T-047** — Estender `DetectorDuplicidadeEconomica` com `moeda` na chave
   - **O que faz:** `ChaveDuplicidade` ganha o campo `moeda` (RN-010 atualizada, AMB-028): dois itens com mesma `data`/categoria normalizada/valor normalizado (já convertido, desde T-038)/fornecedor/descrição, mas em moedas diferentes, nunca são tratados como duplicata. Itens com `MOEDA_SEM_COTACAO` já chegam inelegíveis a este estágio (T-037/T-039 garantem isso) — nenhuma exclusão adicional é necessária aqui.
   - **RN atendidas:** RN-010 (atualizada).
   - **CA atendidos:** CA-033.
@@ -1179,7 +1179,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
     mvn -q test "-Dtest=DuplicidadeEntreMoedasTest,DuplicidadeEconomicaTest"
     ```
   - **Commit sugerido:** `feat(T-047): adiciona moeda a chave de duplicidade economica`
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 - [ ] **T-048** — Estender `ResultadoItem` com campos de câmbio, migrar construtores diretos e consolidar a ordem final do `CompositorSaida`
   - **O que faz:** `ResultadoItem` ganha três campos (`moeda`, `taxaCambioAplicada`, `dataCotacaoUtilizada`), populados sem recálculo a partir do `ItemValidado` de cada posição, dentro de `componentesDoRegistro(...)`. `ORDEM_CAMPO` e `ESTAGIO_POR_CODIGO` **já foram atualizados** para a ordem final desde T-022/T-023 respectivamente — esta task não os introduz pela primeira vez; ela só **revisa e amplia** `OrdemMotivosTest` para comprovar, com os motivos novos já em uso desde os blocos F/G/H, que a tabela completa de 8.3 está correta de ponta a ponta. Como `ResultadoItem` é um `record` cuja assinatura muda de sete para dez componentes, **todo** `new ResultadoItem(...)` já existente na suíte precisa ser migrado no mesmo commit. Um `record` Java pode, tecnicamente, declarar construtores adicionais que deleguem ao construtor canônico — não se trata de uma limitação da linguagem —, mas esta task **decide deliberadamente não criar** um construtor de compatibilidade de sete argumentos para `ResultadoItem`: é uma escolha de migração imediata e contrato único, não uma restrição técnica, e por isso todos os consumidores diretos são migrados no mesmo commit desta task.
