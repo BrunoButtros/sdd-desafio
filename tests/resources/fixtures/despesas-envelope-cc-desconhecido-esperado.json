@@ -1,0 +1,67 @@
+{
+  "colaborador": {
+    "id": "c-1103",
+    "nome": "Dani Okonkwo",
+    "centro_custo": "CC-SUPORTE-N2"
+  },
+  "periodo": {
+    "competencia": "2026-07",
+    "inicio": "2026-07-01",
+    "fim": "2026-07-31"
+  },
+  "resultados": [
+    {
+      "indice_entrada": 1,
+      "id": "f-001",
+      "valor_informado": 58,
+      "moeda": "BRL",
+      "taxa_cambio_aplicada": 1,
+      "data_cotacao_utilizada": null,
+      "valor_normalizado": 58.00,
+      "valor_reembolsavel": 58.00,
+      "decisao": "INTEGRALMENTE_REEMBOLSADO",
+      "motivos": []
+    },
+    {
+      "indice_entrada": 2,
+      "id": "f-002",
+      "valor_informado": 310,
+      "moeda": "BRL",
+      "taxa_cambio_aplicada": 1,
+      "data_cotacao_utilizada": null,
+      "valor_normalizado": 310.00,
+      "valor_reembolsavel": 250.00,
+      "decisao": "PARCIALMENTE_REEMBOLSADO",
+      "motivos": [
+        { "codigo": "TETO_HOSPEDAGEM_APLICADO", "regra": "RN-013", "campo": null }
+      ]
+    },
+    {
+      "indice_entrada": 3,
+      "id": "f-003",
+      "valor_informado": 190,
+      "moeda": "BRL",
+      "taxa_cambio_aplicada": 1,
+      "data_cotacao_utilizada": null,
+      "valor_normalizado": 190.00,
+      "valor_reembolsavel": 0.00,
+      "decisao": "RECUSADO",
+      "motivos": [
+        { "codigo": "CATEGORIA_FORA_POLITICA", "regra": "RN-007", "campo": null }
+      ]
+    },
+    {
+      "indice_entrada": 4,
+      "id": "f-004",
+      "valor_informado": 12,
+      "moeda": "USD",
+      "taxa_cambio_aplicada": 5.48,
+      "data_cotacao_utilizada": "2026-07-21",
+      "valor_normalizado": 65.76,
+      "valor_reembolsavel": 65.76,
+      "decisao": "INTEGRALMENTE_REEMBOLSADO",
+      "motivos": []
+    }
+  ],
+  "total_reembolsavel": 373.76
+}
