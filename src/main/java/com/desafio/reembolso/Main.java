@@ -14,7 +14,7 @@ import com.desafio.reembolso.modelo.TabelaCambio;
 import com.desafio.reembolso.modelo.TabelaPoliticaResolvida;
 import com.desafio.reembolso.pipeline.AgregadorTetoDiario;
 import com.desafio.reembolso.pipeline.AgregadorTetoDiario.ResultadoTeto;
-import com.desafio.reembolso.pipeline.AgregadorTetoHospedagem;
+import com.desafio.reembolso.pipeline.AgregadorTetoIndividual;
 import com.desafio.reembolso.pipeline.AvaliadorRegrasIndividuais;
 import com.desafio.reembolso.pipeline.AvaliadorRegrasIndividuais.ItemAvaliado;
 import com.desafio.reembolso.pipeline.CompositorSaida;
@@ -220,10 +220,10 @@ public final class Main {
         List<ItemAvaliado> aposDuplicidade = DetectorDuplicidadeEconomica.detectar(aprovados);
 
         List<ItemAvaliado> elegiveisParaTetos = SeletorElegiveis.selecionar(aposDuplicidade);
-        List<ResultadoTeto> resultadosDiarios = AgregadorTetoDiario.aplicar(elegiveisParaTetos);
-        List<ResultadoTeto> resultadosHospedagem = AgregadorTetoHospedagem.aplicar(elegiveisParaTetos);
+        List<ResultadoTeto> resultadosDiarios = AgregadorTetoDiario.aplicar(elegiveisParaTetos, tabelaResolvida);
+        List<ResultadoTeto> resultadosIndividuais = AgregadorTetoIndividual.aplicar(elegiveisParaTetos, tabelaResolvida);
 
-        return CompositorSaida.compor(avaliados, aposDuplicidade, resultadosDiarios, resultadosHospedagem);
+        return CompositorSaida.compor(avaliados, aposDuplicidade, resultadosDiarios, resultadosIndividuais);
     }
 
     /**

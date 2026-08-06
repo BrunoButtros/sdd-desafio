@@ -11,6 +11,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
@@ -20,13 +21,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Teste de integração ponta a ponta (T-020): executa {@link Main#run} contra
- * {@code exemplos/despesas-exemplo.json} e compara o JSON produzido,
- * estruturalmente, contra o fixture escrito manualmente em
+ * {@code exemplos/despesas-exemplo.json} sob uma política e um câmbio
+ * temporários (gravados em {@code @TempDir}) equivalentes à baseline
+ * histórica — {@code padrao} com {@code alimentacao} R$60/dia,
+ * {@code transporte_urbano} R$80/dia, {@code hospedagem} R$250/diária,
+ * gatilho de nota fiscal R$100, {@code centros_custo} vazio — e compara o
+ * JSON produzido, estruturalmente, contra o fixture escrito manualmente em
  * {@code tests/resources/fixtures/despesas-exemplo-esperado.json} — nunca
  * gerado pelo próprio motor. Fecha CA-001, CA-002, CA-003 e confirma ponta a
- * ponta CA-013, CA-016 e CA-017.
+ * ponta CA-013, CA-016 e CA-017. Este é o cenário da baseline histórica
+ * (R$ 585,43); o cenário sob a política v4 real e {@code CC-ENG-PLATAFORMA}
+ * (R$ 351,43) ganha fixture e teste próprios em T-051 — não este.
  */
-@DisplayName("Exemplo completo — T-020 / CA-001 a CA-003 (fechamento)")
+@DisplayName("Exemplo completo — T-020 / CA-001 a CA-003 (fechamento, baseline histórica)")
 class ExemploCompletoTest {
 
     private static final ObjectMapper MAPPER = new ObjectMapper()
@@ -34,13 +41,37 @@ class ExemploCompletoTest {
 
     private static final Path ENTRADA = Path.of("exemplos", "despesas-exemplo.json");
     private static final Path FIXTURE = Path.of("tests", "resources", "fixtures", "despesas-exemplo-esperado.json");
-    private static final Path POLITICA = Path.of("exemplos", "envelope", "politica-v4.json");
-    private static final Path CAMBIO = Path.of("exemplos", "envelope", "cambio.json");
+
+    private static final String POLITICA_HISTORICA = """
+            {
+              "vigencia": "2026-07-01",
+              "moeda_base": "BRL",
+              "nota_fiscal_obrigatoria_acima_de": 100.00,
+              "padrao": {
+                "alimentacao": { "limite": 60.00, "periodicidade": "dia" },
+                "transporte_urbano": { "limite": 80.00, "periodicidade": "dia" },
+                "hospedagem": { "limite": 250.00, "periodicidade": "diaria" }
+              },
+              "centros_custo": {}
+            }
+            """;
+
+    private static final String CAMBIO_HISTORICO = """
+            {
+              "moeda_base": "BRL",
+              "taxas": {}
+            }
+            """;
 
     @Test
-    @DisplayName("processa o arquivo de exemplo e coincide estruturalmente com o fixture manual (14 registros, total 335,43)")
+    @DisplayName("processa o arquivo de exemplo sob a política histórica equivalente e coincide estruturalmente "
+            + "com o fixture manual (14 registros, total 585,43)")
     void exemploCompleto_coincideEstruturalmenteComFixture(@TempDir Path tempDir) throws Exception {
         Path saida = tempDir.resolve("resultado.json");
+        Path politica = tempDir.resolve("politica-historica.json");
+        Files.writeString(politica, POLITICA_HISTORICA, StandardCharsets.UTF_8);
+        Path cambio = tempDir.resolve("cambio-historico.json");
+        Files.writeString(cambio, CAMBIO_HISTORICO, StandardCharsets.UTF_8);
 
         ByteArrayOutputStream outBuffer = new ByteArrayOutputStream();
         ByteArrayOutputStream errBuffer = new ByteArrayOutputStream();
@@ -52,8 +83,8 @@ class ExemploCompletoTest {
                             "calcular",
                             "--input", ENTRADA.toString(),
                             "--output", saida.toString(),
-                            "--politica", POLITICA.toString(),
-                            "--cambio", CAMBIO.toString()},
+                            "--politica", politica.toString(),
+                            "--cambio", cambio.toString()},
                     out, err);
             out.flush();
             err.flush();
@@ -71,8 +102,8 @@ class ExemploCompletoTest {
         JsonNode resultados = real.get("resultados");
         assertEquals(14, resultados.size(), "exatamente 14 registros de resultado");
 
-        assertEquals(0, new BigDecimal("335.43").compareTo(real.get("total_reembolsavel").decimalValue()),
-                "total_reembolsavel deve ser 335.43");
+        assertEquals(0, new BigDecimal("585.43").compareTo(real.get("total_reembolsavel").decimalValue()),
+                "total_reembolsavel deve ser 585.43");
 
         // Nenhuma despesa omitida ou duplicada: 14 índices distintos (1..14) e 14 ids distintos (d-001..d-014).
         Set<Integer> indicesVistos = new HashSet<>();

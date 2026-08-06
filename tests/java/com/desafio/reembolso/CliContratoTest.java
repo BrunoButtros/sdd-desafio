@@ -814,4 +814,237 @@ class CliContratoTest {
             assertFalse(codigo.contains("TETO"), "não deve receber motivo de teto: " + codigo);
         }
     }
+
+    // ---- Wiring dos agregadores por periodicidade no Main real (T-046) ---
+
+    private static final String POLITICA_CENTRO_CUSTO_LIMITE_ZERO = """
+            {
+              "vigencia": "2026-07-01",
+              "moeda_base": "BRL",
+              "nota_fiscal_obrigatoria_acima_de": 100.00,
+              "padrao": {
+                "alimentacao": { "limite": 60.00, "periodicidade": "dia" }
+              },
+              "centros_custo": {
+                "CC-ENG-PLATAFORMA": {
+                  "hospedagem": { "limite": 0.00, "periodicidade": "diaria" }
+                }
+              }
+            }
+            """;
+
+    private static String envelopeHospedagemLimiteZero() {
+        return """
+                {
+                  "colaborador": { "centro_custo": "CC-ENG-PLATAFORMA" },
+                  "periodo": { "inicio": "2026-07-01", "fim": "2026-07-31" },
+                  "despesas": [
+                    { "id": "d-001", "data": "2026-07-10", "categoria": "hospedagem",
+                      "descricao": "Hotel", "fornecedor": "Hotel Central", "valor": 480.00,
+                      "tem_nota_fiscal": true }
+                  ]
+                }
+                """;
+    }
+
+    @Test
+    @DisplayName("categoria com limite zero no centro de custo cadastrado recusa com "
+            + "CATEGORIA_NAO_REEMBOLSAVEL_CENTRO_CUSTO/RN-019 antes de qualquer agregador de teto (T-046, spec 8.4 item 15)")
+    void integracaoReal_limiteZeroRecusaAntesDosTetos(@TempDir Path tempDir) throws Exception {
+        Path input = tempDir.resolve("entrada.json");
+        Files.writeString(input, envelopeHospedagemLimiteZero(), StandardCharsets.UTF_8);
+        Path output = tempDir.resolve("resultado.json");
+        Path politica = tempDir.resolve("politica-limite-zero.json");
+        Files.writeString(politica, POLITICA_CENTRO_CUSTO_LIMITE_ZERO, StandardCharsets.UTF_8);
+
+        Resultado resultado = executar(
+                "calcular",
+                "--input", input.toString(),
+                "--output", output.toString(),
+                "--politica", politica.toString(),
+                "--cambio", CAMBIO);
+
+        assertEquals(0, resultado.codigo);
+        assertEquals("", resultado.stdout);
+        assertEquals("", resultado.stderr);
+        assertTrue(Files.exists(output), "--output deve ser criado em caso de sucesso");
+
+        JsonNode raiz = new ObjectMapper().readTree(output.toFile());
+        JsonNode resultados = raiz.get("resultados");
+        assertEquals(1, resultados.size(), "deve haver exatamente um item no resultado");
+
+        JsonNode item = resultados.get(0);
+        assertEquals("RECUSADO", item.get("decisao").asText());
+        assertEquals(0, new BigDecimal("0.00").compareTo(item.get("valor_reembolsavel").decimalValue()));
+
+        JsonNode motivos = item.get("motivos");
+        assertEquals(1, motivos.size(), "deve conter exatamente um motivo");
+        JsonNode motivo = motivos.get(0);
+        assertEquals("CATEGORIA_NAO_REEMBOLSAVEL_CENTRO_CUSTO", motivo.get("codigo").asText());
+        assertEquals("RN-019", motivo.get("regra").asText());
+        assertTrue(motivo.get("campo").isNull(), "campo deve ser nulo");
+
+        for (JsonNode m : motivos) {
+            String codigo = m.get("codigo").asText();
+            assertFalse(codigo.contains("TETO"), "recusa por limite zero não deve carregar motivo de teto: " + codigo);
+        }
+
+        assertEquals(0, new BigDecimal("0.00").compareTo(raiz.get("total_reembolsavel").decimalValue()));
+    }
+
+    private static final String POLITICA_REPRESENTACAO_DIA = """
+            {
+              "vigencia": "2026-07-01",
+              "moeda_base": "BRL",
+              "nota_fiscal_obrigatoria_acima_de": 100.00,
+              "padrao": {},
+              "centros_custo": {
+                "CC-COMERCIAL": {
+                  "representacao": { "limite": 300.00, "periodicidade": "dia" }
+                }
+              }
+            }
+            """;
+
+    private static String envelopeRepresentacaoDia() {
+        return """
+                {
+                  "colaborador": { "centro_custo": "CC-COMERCIAL" },
+                  "periodo": { "inicio": "2026-07-01", "fim": "2026-07-31" },
+                  "despesas": [
+                    { "id": "d-001", "data": "2026-07-10", "categoria": "representacao",
+                      "descricao": "Almoço com cliente", "fornecedor": "Restaurante A", "valor": 220.00,
+                      "tem_nota_fiscal": true },
+                    { "id": "d-002", "data": "2026-07-10", "categoria": "representacao",
+                      "descricao": "Jantar com cliente", "fornecedor": "Restaurante B", "valor": 150.00,
+                      "tem_nota_fiscal": true }
+                  ]
+                }
+                """;
+    }
+
+    @Test
+    @DisplayName("cenário real DIA pela CLI: representacao com periodicidade \"dia\" divide saldo compartilhado "
+            + "via AgregadorTetoDiario/tabelaResolvida (T-046, CA-047)")
+    void integracaoReal_periodicidadeDia_viaMainRun(@TempDir Path tempDir) throws Exception {
+        Path input = tempDir.resolve("entrada.json");
+        Files.writeString(input, envelopeRepresentacaoDia(), StandardCharsets.UTF_8);
+        Path output = tempDir.resolve("resultado.json");
+        Path politica = tempDir.resolve("politica-representacao-dia.json");
+        Files.writeString(politica, POLITICA_REPRESENTACAO_DIA, StandardCharsets.UTF_8);
+
+        Resultado resultado = executar(
+                "calcular",
+                "--input", input.toString(),
+                "--output", output.toString(),
+                "--politica", politica.toString(),
+                "--cambio", CAMBIO);
+
+        assertEquals(0, resultado.codigo);
+        assertEquals("", resultado.stdout);
+        assertEquals("", resultado.stderr);
+        assertTrue(Files.exists(output), "--output deve ser criado em caso de sucesso");
+
+        JsonNode raiz = new ObjectMapper().readTree(output.toFile());
+        JsonNode resultados = raiz.get("resultados");
+        assertEquals(2, resultados.size(), "devem existir exatamente dois resultados");
+
+        JsonNode primeiro = resultados.get(0);
+        assertEquals("INTEGRALMENTE_REEMBOLSADO", primeiro.get("decisao").asText());
+        assertEquals(0, new BigDecimal("220.00").compareTo(primeiro.get("valor_reembolsavel").decimalValue()));
+        assertEquals(0, primeiro.get("motivos").size(), "item integralmente reembolsado não tem motivos");
+
+        JsonNode segundo = resultados.get(1);
+        assertEquals("PARCIALMENTE_REEMBOLSADO", segundo.get("decisao").asText());
+        assertEquals(0, new BigDecimal("80.00").compareTo(segundo.get("valor_reembolsavel").decimalValue()));
+
+        JsonNode motivosSegundo = segundo.get("motivos");
+        assertEquals(1, motivosSegundo.size(), "deve conter exatamente um motivo");
+        JsonNode motivo = motivosSegundo.get(0);
+        assertEquals("TETO_DIARIO_APLICADO", motivo.get("codigo").asText());
+        assertEquals("RN-019", motivo.get("regra").asText());
+        assertTrue(motivo.get("campo").isNull(), "campo deve ser nulo");
+
+        for (JsonNode m : motivosSegundo) {
+            assertFalse("TETO_INDIVIDUAL_APLICADO".equals(m.get("codigo").asText()),
+                    "teto \"dia\" nunca deve produzir TETO_INDIVIDUAL_APLICADO");
+        }
+
+        assertEquals(0, new BigDecimal("300.00").compareTo(raiz.get("total_reembolsavel").decimalValue()));
+    }
+
+    private static final String POLITICA_ESTACIONAMENTO_DIARIA = """
+            {
+              "vigencia": "2026-07-01",
+              "moeda_base": "BRL",
+              "nota_fiscal_obrigatoria_acima_de": 100.00,
+              "padrao": {},
+              "centros_custo": {
+                "CC-COMERCIAL": {
+                  "estacionamento": { "limite": 50.00, "periodicidade": "diaria" }
+                }
+              }
+            }
+            """;
+
+    private static String envelopeEstacionamentoDiaria() {
+        return """
+                {
+                  "colaborador": { "centro_custo": "CC-COMERCIAL" },
+                  "periodo": { "inicio": "2026-07-01", "fim": "2026-07-31" },
+                  "despesas": [
+                    { "id": "d-001", "data": "2026-07-10", "categoria": "estacionamento",
+                      "descricao": "Estacionamento visita cliente", "fornecedor": "Estapar", "valor": 80.00,
+                      "tem_nota_fiscal": true }
+                  ]
+                }
+                """;
+    }
+
+    @Test
+    @DisplayName("cenário real DIARIA pela CLI: estacionamento com periodicidade \"diaria\" usa teto individual "
+            + "via AgregadorTetoIndividual/tabelaResolvida (T-046, CA-049)")
+    void integracaoReal_periodicidadeDiaria_viaMainRun(@TempDir Path tempDir) throws Exception {
+        Path input = tempDir.resolve("entrada.json");
+        Files.writeString(input, envelopeEstacionamentoDiaria(), StandardCharsets.UTF_8);
+        Path output = tempDir.resolve("resultado.json");
+        Path politica = tempDir.resolve("politica-estacionamento-diaria.json");
+        Files.writeString(politica, POLITICA_ESTACIONAMENTO_DIARIA, StandardCharsets.UTF_8);
+
+        Resultado resultado = executar(
+                "calcular",
+                "--input", input.toString(),
+                "--output", output.toString(),
+                "--politica", politica.toString(),
+                "--cambio", CAMBIO);
+
+        assertEquals(0, resultado.codigo);
+        assertEquals("", resultado.stdout);
+        assertEquals("", resultado.stderr);
+        assertTrue(Files.exists(output), "--output deve ser criado em caso de sucesso");
+
+        JsonNode raiz = new ObjectMapper().readTree(output.toFile());
+        JsonNode resultados = raiz.get("resultados");
+        assertEquals(1, resultados.size(), "deve haver exatamente um resultado");
+
+        JsonNode item = resultados.get(0);
+        assertEquals("PARCIALMENTE_REEMBOLSADO", item.get("decisao").asText());
+        assertEquals(0, new BigDecimal("50.00").compareTo(item.get("valor_reembolsavel").decimalValue()));
+
+        JsonNode motivos = item.get("motivos");
+        assertEquals(1, motivos.size(), "deve conter exatamente um motivo");
+        JsonNode motivo = motivos.get(0);
+        assertEquals("TETO_INDIVIDUAL_APLICADO", motivo.get("codigo").asText());
+        assertEquals("RN-019", motivo.get("regra").asText());
+        assertTrue(motivo.get("campo").isNull(), "campo deve ser nulo");
+
+        for (JsonNode m : motivos) {
+            String codigo = m.get("codigo").asText();
+            assertFalse("TETO_DIARIO_APLICADO".equals(codigo), "teto \"diaria\" nunca deve produzir TETO_DIARIO_APLICADO");
+            assertFalse("TETO_HOSPEDAGEM_APLICADO".equals(codigo),
+                    "categoria diferente de hospedagem nunca deve produzir TETO_HOSPEDAGEM_APLICADO");
+        }
+
+        assertEquals(0, new BigDecimal("50.00").compareTo(raiz.get("total_reembolsavel").decimalValue()));
+    }
 }

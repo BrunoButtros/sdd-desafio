@@ -1129,7 +1129,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
   - **Commit sugerido:** `test(T-045): prova que o mecanismo de teto depende de periodicidade, nao do nome da categoria`
   - **Status:** [x] concluída
 
-- [ ] **T-046** — Wiring dos agregadores por periodicidade no `Main`
+- [x] **T-046** — Wiring dos agregadores por periodicidade no `Main`
   - **O que faz:** `Main.executarPipeline` passa a chamar as novas sobrecargas de `AgregadorTetoDiario.aplicar(elegiveis, tabelaResolvida)` e `AgregadorTetoIndividual.aplicar(elegiveis, tabelaResolvida)`, em vez de `AgregadorTetoDiario`(antigo)/`AgregadorTetoHospedagem` — usando a mesma `TabelaPoliticaResolvida` já calculada em T-042. Como esta task é o ponto em que os dois agregadores novos passam a ser efetivamente exercitados pelo `Main` real, `CliContratoTest` precisa exercer os **dois** caminhos (`"dia"` e `"diaria"`) **por `Main.run(...)`**, não só o cenário de recusa por limite zero já coberto. Estratégia de dados fechada, sem alternativa: nenhum fixture permanente novo é criado em `tests/resources` — `CliContratoTest` usa `@TempDir`; a política e o envelope de cada um dos dois cenários novos (`representacao`/`"dia"` e `estacionamento`/`"diaria"`) são escritos em arquivos temporários pelo próprio teste, dentro do `@TempDir`; `--output` também aponta para um arquivo dentro do `@TempDir`; `--cambio` usa `exemplos/envelope/cambio.json` (arquivo real já existente, mesmo quando o cenário não tem despesa em moeda estrangeira). A execução real do JAR empacotado continua pertencendo exclusivamente a T-054 — esta task só usa `Main.run(...)` in-process.
   - **RN atendidas:** RN-011 a RN-015, RN-019.
   - **CA atendidos:** confirma CA-027, CA-047 e CA-049 ponta a ponta via CLI.
@@ -1154,7 +1154,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
     mvn -q test -Dtest=CliContratoTest
     ```
   - **Commit sugerido:** `feat(T-046): liga agregadores por periodicidade ao pipeline real via Main`
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 ---
 

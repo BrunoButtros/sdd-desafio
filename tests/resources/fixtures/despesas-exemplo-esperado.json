@@ -62,7 +62,7 @@
       "valor_reembolsavel": 0.00,
       "decisao": "RECUSADO",
       "motivos": [
-        { "codigo": "CATEGORIA_NAO_REEMBOLSAVEL_CENTRO_CUSTO", "regra": "RN-019", "campo": null }
+        { "codigo": "CATEGORIA_FORA_POLITICA", "regra": "RN-007", "campo": null }
       ]
     },
     {
@@ -112,10 +112,10 @@
       "id": "d-010",
       "valor_informado": 480,
       "valor_normalizado": 480.00,
-      "valor_reembolsavel": 0.00,
-      "decisao": "RECUSADO",
+      "valor_reembolsavel": 250.00,
+      "decisao": "PARCIALMENTE_REEMBOLSADO",
       "motivos": [
-        { "codigo": "CATEGORIA_NAO_REEMBOLSAVEL_CENTRO_CUSTO", "regra": "RN-019", "campo": null }
+        { "codigo": "TETO_HOSPEDAGEM_APLICADO", "regra": "RN-013", "campo": null }
       ]
     },
     {
@@ -144,7 +144,6 @@
       "valor_reembolsavel": 0.00,
       "decisao": "RECUSADO",
       "motivos": [
-        { "codigo": "CATEGORIA_NAO_REEMBOLSAVEL_CENTRO_CUSTO", "regra": "RN-019", "campo": null },
         { "codigo": "NOTA_FISCAL_AUSENTE", "regra": "RN-009", "campo": null }
       ]
     },
@@ -160,5 +159,5 @@
       ]
     }
   ],
-  "total_reembolsavel": 335.43
+  "total_reembolsavel": 585.43
 }
