@@ -893,7 +893,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
 
 ### Bloco F — Conversão cambial
 
-- [ ] **T-037** — Implementar `ResolutorCambio`
+- [x] **T-037** — Implementar `ResolutorCambio`
   - **O que faz:** cria o novo estágio de pipeline `ResolutorCambio` (spec 8.1, passo 5; plan §9), que consome os três campos de que RN-020 depende — `ItemValidado.getValor()`, `ItemValidado.getMoeda()` **e** `ItemValidado.getData()` (plan §9: "o estágio é avaliado quando os três campos de que RN-020 depende estiverem estruturalmente utilizáveis") — e uma `TabelaCambio`, devolvendo um novo `ItemValidado` com `taxaCambioAplicada`/`dataCotacaoUtilizada`/`valorConvertidoBruto` recalculados — **sem arredondar** `valorConvertidoBruto` (DT-015, o arredondamento é responsabilidade exclusiva do `Normalizador`, T-038). Se **qualquer um** dos três — `valor`, `moeda` ou `data` — for `null`, o item é devolvido sem tentativa de resolução e sem motivo novo: não basta checar só `moeda`, porque um item com `despesa.valor` ou `despesa.data` estruturalmente inválidos, mesmo com `moeda` válida, também não tem como ser convertido. BRL: taxa `1`, data nula, `valorConvertidoBruto` igual ao valor original. Moeda estrangeira com cotação resolvida (via `TabelaCambio.cotacaoEm(...)`, que devolve `Optional<TabelaCambio.CotacaoResolvida>`, T-027): `valorConvertidoBruto = valor × taxa` (produto exato, sem `setScale`), com `taxaCambioAplicada`/`dataCotacaoUtilizada` vindos da mesma `CotacaoResolvida`. Sem cotação utilizável: os três campos ficam nulos e o motivo `MOEDA_SEM_COTACAO` (`campo = CampoCanonico.MOEDA`) é acrescentado aos motivos do item. Erro estrutural em `categoria`/`descricao`/`fornecedor`/`tem_nota_fiscal` **não** impede a conversão — só `valor`, `moeda` e `data` são checados.
   - **RN atendidas:** RN-020.
   - **CA atendidos:** CA-029, CA-030.
@@ -915,7 +915,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
     mvn -q test -Dtest=ResolucaoCambioTest
     ```
   - **Commit sugerido:** `feat(T-037): implementa ResolutorCambio com verificacao de valor/moeda/data e CotacaoResolvida`
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 - [ ] **T-038** — `Normalizador` sobre `valorConvertidoBruto` + wiring da conversão no pipeline + migração dos pipelines de teste históricos
   - **O que faz:** `Normalizador` passa a normalizar `item.getValorConvertidoBruto()` em vez de `item.getValor()` diretamente — mesmo caminho para BRL e moeda estrangeira, sem `if` de BRL dentro do `Normalizador` (plan §9), e **sem nenhum fallback** para `item.getValor()`. `Main.executarPipeline` ganha o estágio `ResolutorCambio.resolverLista(...)`, inserido entre `DetectorIdDuplicado.detectar(...)` e `Normalizador.normalizarLista(...)` (spec 8.1, passo 5), usando a `TabelaCambio` já carregada em T-035. Como T-036 já deixa `valorConvertidoBruto` nulo em todo `ItemValidado` produzido por `ValidadorItem` (só `ResolutorCambio` o preenche, inclusive para BRL), **qualquer teste histórico** que exercite `ValidadorItem` → (opcionalmente `DetectorIdDuplicado`) → `Normalizador` sem passar por `ResolutorCambio` quebraria ou passaria a obter `valor_normalizado` nulo assim que esta task mudar a leitura do `Normalizador`. Por isso, esta task também migra esses pipelines de teste e cria o helper `CambioTesteSupport`, no mesmo commit — não é aceitável trocar a fonte de leitura do `Normalizador` e deixar a suíte histórica quebrada até uma task futura arrumar.
