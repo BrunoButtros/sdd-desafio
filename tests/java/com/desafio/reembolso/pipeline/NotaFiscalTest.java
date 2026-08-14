@@ -6,7 +6,9 @@ import com.desafio.reembolso.modelo.Envelope;
 import com.desafio.reembolso.modelo.ItemValidado;
 import com.desafio.reembolso.modelo.ItemValidado.Motivo;
 import com.desafio.reembolso.modelo.MotivoCodigo;
-import com.desafio.reembolso.modelo.PoliticaReembolso;
+import com.desafio.reembolso.modelo.Periodicidade;
+import com.desafio.reembolso.modelo.PoliticaExterna;
+import com.desafio.reembolso.modelo.TabelaPoliticaResolvida;
 import com.desafio.reembolso.modelo.RegraNegocio;
 import com.desafio.reembolso.pipeline.AvaliadorRegrasIndividuais.ItemAvaliado;
 import com.desafio.reembolso.pipeline.Normalizador.ItemNormalizado;
@@ -16,9 +18,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -30,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Cobre {@link PoliticaReembolso} (plan §5, DT-007) e RN-009 / CA-008 / CA-009
+ * Cobre a política histórica externa (plan §5, DT-011) e RN-009 / CA-008 / CA-009
  * (spec 4.5, 7, 8.2, 8.4): valor normalizado estritamente maior que o
  * gatilho de nota fiscal, sem {@code tem_nota_fiscal}, recebe
  * {@code NOTA_FISCAL_AUSENTE} e fica inelegível, com {@code valorReembolsavel}
@@ -40,7 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * {@code CATEGORIA_FORA_POLITICA}, e não é avaliada quando valor ou nota
  * fiscal são estruturalmente inválidos.
  */
-@DisplayName("Nota fiscal obrigatória — RN-009 / CA-008 / CA-009 e PoliticaReembolso")
+@DisplayName("Nota fiscal obrigatória — RN-009 / CA-008 / CA-009 e política externa")
 class NotaFiscalTest {
 
     private static final ObjectMapper MAPPER = new ObjectMapper()
@@ -97,49 +96,47 @@ class NotaFiscalTest {
                 """.formatted(valorJson, notaJson);
     }
 
-    // ---- PoliticaReembolso ----------------------------------------------
+    // ---- Política histórica externa -------------------------------------
 
     @Test
-    @DisplayName("PoliticaReembolso 1 — padrao() retorna os quatro valores fixados pela spec")
+    @DisplayName("política histórica externa retorna os quatro valores fixados pela spec")
     void padrao_retornaValoresFixados() {
-        PoliticaReembolso politica = PoliticaReembolso.padrao();
+        PoliticaExterna politica = CambioTesteSupport.POLITICA_HISTORICA;
 
-        assertEquals(new BigDecimal("60.00"), politica.getLimiteDiarioAlimentacao());
-        assertEquals(new BigDecimal("80.00"), politica.getLimiteDiarioTransporteUrbano());
-        assertEquals(new BigDecimal("250.00"), politica.getLimiteIndividualHospedagem());
-        assertEquals(new BigDecimal("100.00"), politica.getGatilhoNotaFiscal());
+        assertEquals(0, new BigDecimal("60.00").compareTo(politica.getPadrao().get("alimentacao").limite()));
+        assertEquals(Periodicidade.DIA, politica.getPadrao().get("alimentacao").periodicidade());
+        assertEquals(0, new BigDecimal("80.00").compareTo(politica.getPadrao().get("transporte_urbano").limite()));
+        assertEquals(Periodicidade.DIA, politica.getPadrao().get("transporte_urbano").periodicidade());
+        assertEquals(0, new BigDecimal("250.00").compareTo(politica.getPadrao().get("hospedagem").limite()));
+        assertEquals(Periodicidade.DIARIA, politica.getPadrao().get("hospedagem").periodicidade());
+        assertEquals(0, new BigDecimal("100.00").compareTo(politica.getNotaFiscalObrigatoriaAcimaDe()));
     }
 
     @Test
-    @DisplayName("PoliticaReembolso 2 — os quatro valores têm escala exatamente 2")
+    @DisplayName("política histórica externa preserva escala 2 nos quatro valores")
     void padrao_valoresComEscala2() {
-        PoliticaReembolso politica = PoliticaReembolso.padrao();
+        TabelaPoliticaResolvida tabela = CambioTesteSupport.TABELA_HISTORICA;
 
-        assertEquals(2, politica.getLimiteDiarioAlimentacao().scale());
-        assertEquals(2, politica.getLimiteDiarioTransporteUrbano().scale());
-        assertEquals(2, politica.getLimiteIndividualHospedagem().scale());
-        assertEquals(2, politica.getGatilhoNotaFiscal().scale());
+        assertEquals(2, tabela.getCategorias().get("alimentacao").limite().scale());
+        assertEquals(2, tabela.getCategorias().get("transporte_urbano").limite().scale());
+        assertEquals(2, tabela.getCategorias().get("hospedagem").limite().scale());
+        assertEquals(0, new BigDecimal("100.00").compareTo(
+                CambioTesteSupport.POLITICA_HISTORICA.getNotaFiscalObrigatoriaAcimaDe()));
     }
 
     @Test
-    @DisplayName("PoliticaReembolso 3 — chamadas repetidas a padrao() retornam a mesma instância")
-    void padrao_retornaMesmaInstancia() {
-        assertSame(PoliticaReembolso.padrao(), PoliticaReembolso.padrao());
+    @DisplayName("política histórica externa expõe tabelas imutáveis")
+    void padrao_tabelaNaoModificavel() {
+        assertThrows(UnsupportedOperationException.class,
+                () -> CambioTesteSupport.POLITICA_HISTORICA.getPadrao().clear());
     }
 
     @Test
-    @DisplayName("PoliticaReembolso 4 — não expõe setters nem estado mutável")
-    void naoExpoeSettersNemEstadoMutavel() {
-        for (Method metodo : PoliticaReembolso.class.getMethods()) {
-            assertFalse(metodo.getName().startsWith("set"),
-                    "PoliticaReembolso não deve expor setters: " + metodo.getName());
-        }
-        for (Field campo : PoliticaReembolso.class.getDeclaredFields()) {
-            if (!campo.isSynthetic()) {
-                assertTrue(Modifier.isFinal(campo.getModifiers()),
-                        "Campo de PoliticaReembolso deve ser final: " + campo.getName());
-            }
-        }
+    @DisplayName("política histórica externa preserva metadados do fixture")
+    void padrao_preservaMetadadosDoFixture() {
+        assertEquals("BRL", CambioTesteSupport.POLITICA_HISTORICA.getMoedaBase());
+        assertEquals(java.time.LocalDate.of(2026, 7, 1),
+                CambioTesteSupport.POLITICA_HISTORICA.getVigencia());
     }
 
     // ---- RN-009 — casos de borda ------------------------------------------
@@ -150,7 +147,7 @@ class NotaFiscalTest {
         ItemNormalizado item = normalizar(itemUnico("100.00", "false")).get(0);
         assertEquals(new BigDecimal("100.00"), item.valorNormalizado());
 
-        ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item);
+        ItemAvaliado avaliado = CambioTesteSupport.avaliar(item);
 
         assertFalse(avaliado.motivos().contains(notaFiscalAusente()));
         assertTrue(avaliado.elegivel());
@@ -162,7 +159,7 @@ class NotaFiscalTest {
     void umCentavoAcimaDoGatilho_recebeMotivoEFicaInelegivel() {
         ItemNormalizado item = normalizar(itemUnico("100.01", "false")).get(0);
 
-        ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item);
+        ItemAvaliado avaliado = CambioTesteSupport.avaliar(item);
 
         assertEquals(1, avaliado.motivos().size());
         Motivo motivo = avaliado.motivos().get(0);
@@ -180,7 +177,7 @@ class NotaFiscalTest {
         ItemNormalizado item = normalizar(itemUnico("100.004", "false")).get(0);
         assertEquals(new BigDecimal("100.00"), item.valorNormalizado());
 
-        ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item);
+        ItemAvaliado avaliado = CambioTesteSupport.avaliar(item);
 
         assertFalse(avaliado.motivos().contains(notaFiscalAusente()));
         assertTrue(avaliado.elegivel());
@@ -192,7 +189,7 @@ class NotaFiscalTest {
         ItemNormalizado item = normalizar(itemUnico("100.005", "false")).get(0);
         assertEquals(new BigDecimal("100.01"), item.valorNormalizado());
 
-        ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item);
+        ItemAvaliado avaliado = CambioTesteSupport.avaliar(item);
 
         assertTrue(avaliado.motivos().contains(notaFiscalAusente()));
         assertFalse(avaliado.elegivel());
@@ -203,7 +200,7 @@ class NotaFiscalTest {
     void valorAcimaDoGatilhoComNota_naoRecebeMotivo() {
         ItemNormalizado item = normalizar(itemUnico("690.00", "true")).get(0);
 
-        ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item);
+        ItemAvaliado avaliado = CambioTesteSupport.avaliar(item);
 
         assertFalse(avaliado.motivos().contains(notaFiscalAusente()));
         assertTrue(avaliado.elegivel());
@@ -215,7 +212,7 @@ class NotaFiscalTest {
     void valorAcimaDoGatilhoSemNota_recebeMotivoSemTeto() {
         ItemNormalizado item = normalizar(itemUnico("690.00", "false")).get(0);
 
-        ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item);
+        ItemAvaliado avaliado = CambioTesteSupport.avaliar(item);
 
         assertEquals(1, avaliado.motivos().size());
         assertEquals(MotivoCodigo.NOTA_FISCAL_AUSENTE, avaliado.motivos().get(0).codigo());
@@ -228,7 +225,7 @@ class NotaFiscalTest {
     void valorNegativoSemNota_naoExigeNota() {
         ItemNormalizado item = normalizar(itemUnico("-500.00", "false")).get(0);
 
-        ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item);
+        ItemAvaliado avaliado = CambioTesteSupport.avaliar(item);
 
         assertEquals(1, avaliado.motivos().size());
         assertEquals(MotivoCodigo.VALOR_NAO_POSITIVO, avaliado.motivos().get(0).codigo());
@@ -241,7 +238,7 @@ class NotaFiscalTest {
     void valorZeroSemNota_naoExigeNota() {
         ItemNormalizado item = normalizar(itemUnico("0", "false")).get(0);
 
-        ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item);
+        ItemAvaliado avaliado = CambioTesteSupport.avaliar(item);
 
         assertTrue(avaliado.motivos().contains(valorNaoPositivo()));
         assertFalse(avaliado.motivos().contains(notaFiscalAusente()));
@@ -262,7 +259,7 @@ class NotaFiscalTest {
         ItemNormalizado item = normalizar(json).get(0);
         assertNull(item.valorNormalizado());
 
-        ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item);
+        ItemAvaliado avaliado = CambioTesteSupport.avaliar(item);
 
         assertEquals(1, avaliado.motivos().size());
         assertEquals(MotivoCodigo.CAMPO_TIPO_INVALIDO, avaliado.motivos().get(0).codigo());
@@ -284,7 +281,7 @@ class NotaFiscalTest {
         ItemNormalizado item = normalizar(json).get(0);
         assertNull(item.item().getTemNotaFiscal());
 
-        ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item);
+        ItemAvaliado avaliado = CambioTesteSupport.avaliar(item);
 
         assertEquals(1, avaliado.motivos().size());
         assertEquals(MotivoCodigo.CAMPO_TIPO_INVALIDO, avaliado.motivos().get(0).codigo());
@@ -306,7 +303,7 @@ class NotaFiscalTest {
         ItemNormalizado item = normalizar(json).get(0);
         assertNull(item.item().getTemNotaFiscal());
 
-        ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item);
+        ItemAvaliado avaliado = CambioTesteSupport.avaliar(item);
 
         assertEquals(1, avaliado.motivos().size());
         assertEquals(MotivoCodigo.CAMPO_AUSENTE, avaliado.motivos().get(0).codigo());
@@ -328,7 +325,7 @@ class NotaFiscalTest {
         ItemNormalizado item = normalizar(json).get(0);
         assertNull(item.item().getTemNotaFiscal());
 
-        ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item);
+        ItemAvaliado avaliado = CambioTesteSupport.avaliar(item);
 
         assertEquals(1, avaliado.motivos().size());
         assertEquals(MotivoCodigo.CAMPO_AUSENTE, avaliado.motivos().get(0).codigo());
@@ -349,7 +346,7 @@ class NotaFiscalTest {
                 """;
         ItemNormalizado item = normalizar(json).get(0);
 
-        ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item);
+        ItemAvaliado avaliado = CambioTesteSupport.avaliar(item);
 
         assertEquals(2, avaliado.motivos().size());
         assertEquals(MotivoCodigo.CAMPO_TIPO_INVALIDO, avaliado.motivos().get(0).codigo());
@@ -373,7 +370,7 @@ class NotaFiscalTest {
         List<ItemValidado> comIdDuplicado = DetectorIdDuplicado.detectar(validados);
         List<ItemValidado> comCambio = CambioTesteSupport.resolverLista(comIdDuplicado);
         List<ItemNormalizado> normalizados = Normalizador.normalizarLista(comCambio);
-        List<ItemAvaliado> avaliados = AvaliadorRegrasIndividuais.avaliarLista(normalizados);
+        List<ItemAvaliado> avaliados = CambioTesteSupport.avaliarLista(normalizados);
 
         ItemAvaliado primeiro = avaliados.get(0);
         assertEquals(2, primeiro.motivos().size());
@@ -395,7 +392,7 @@ class NotaFiscalTest {
                 """;
         ItemNormalizado item = normalizar(json).get(0);
 
-        ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item);
+        ItemAvaliado avaliado = CambioTesteSupport.avaliar(item);
 
         assertEquals(2, avaliado.motivos().size());
         assertEquals(MotivoCodigo.CATEGORIA_FORA_POLITICA, avaliado.motivos().get(0).codigo());
@@ -418,7 +415,7 @@ class NotaFiscalTest {
         Envelope envelope = envelope(json);
         ItemNormalizado item = normalizarDespesas(envelope).get(0);
 
-        ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item, envelope);
+        ItemAvaliado avaliado = CambioTesteSupport.avaliar(item, envelope);
 
         assertEquals(2, avaliado.motivos().size());
         assertEquals(MotivoCodigo.FORA_COMPETENCIA, avaliado.motivos().get(0).codigo());
@@ -441,7 +438,7 @@ class NotaFiscalTest {
         Envelope envelope = envelope(json);
         ItemNormalizado item = normalizarDespesas(envelope).get(0);
 
-        ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item, envelope);
+        ItemAvaliado avaliado = CambioTesteSupport.avaliar(item, envelope);
 
         assertEquals(3, avaliado.motivos().size());
         assertEquals(MotivoCodigo.CATEGORIA_FORA_POLITICA, avaliado.motivos().get(0).codigo());
@@ -463,7 +460,7 @@ class NotaFiscalTest {
                 """;
         ItemNormalizado item = normalizar(json).get(0);
 
-        ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item);
+        ItemAvaliado avaliado = CambioTesteSupport.avaliar(item);
 
         assertEquals(2, avaliado.motivos().size());
         assertEquals(MotivoCodigo.VALOR_NAO_POSITIVO, avaliado.motivos().get(0).codigo());
@@ -484,7 +481,7 @@ class NotaFiscalTest {
                 }
                 """;
         List<ItemNormalizado> normalizados = normalizar(json);
-        List<ItemAvaliado> avaliados = AvaliadorRegrasIndividuais.avaliarLista(normalizados);
+        List<ItemAvaliado> avaliados = CambioTesteSupport.avaliarLista(normalizados);
 
         assertEquals(2, avaliados.size());
         assertEquals(1, avaliados.get(0).itemNormalizado().item().getIndiceEntrada());
@@ -512,7 +509,7 @@ class NotaFiscalTest {
         Envelope envelope = envelope(json);
         List<ItemNormalizado> normalizados =
                 normalizarDespesas(envelope);
-        List<ItemAvaliado> avaliados = AvaliadorRegrasIndividuais.avaliarLista(normalizados, envelope);
+        List<ItemAvaliado> avaliados = CambioTesteSupport.avaliarLista(normalizados, envelope);
 
         assertEquals(2, avaliados.size());
         assertEquals(1, avaliados.get(0).itemNormalizado().item().getIndiceEntrada());
@@ -530,8 +527,8 @@ class NotaFiscalTest {
     void reaplicacao_naoDuplicaMotivo() {
         ItemNormalizado item = normalizar(itemUnico("100.01", "false")).get(0);
 
-        ItemAvaliado primeiraAplicacao = AvaliadorRegrasIndividuais.avaliar(item);
-        ItemAvaliado segundaAplicacao = AvaliadorRegrasIndividuais.avaliar(item);
+        ItemAvaliado primeiraAplicacao = CambioTesteSupport.avaliar(item);
+        ItemAvaliado segundaAplicacao = CambioTesteSupport.avaliar(item);
 
         assertEquals(1, primeiraAplicacao.motivos().size());
         assertEquals(1, segundaAplicacao.motivos().size());

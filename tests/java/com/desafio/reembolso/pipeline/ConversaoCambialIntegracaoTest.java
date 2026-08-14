@@ -138,7 +138,7 @@ class ConversaoCambialIntegracaoTest {
         assertEquals(0, new BigDecimal("220.00").compareTo(normalizados.get(0).valorNormalizado()),
                 "valor convertido/normalizado está acima do gatilho de nota fiscal");
 
-        List<ItemAvaliado> avaliados = AvaliadorRegrasIndividuais.avaliarLista(normalizados);
+        List<ItemAvaliado> avaliados = CambioTesteSupport.avaliarLista(normalizados);
         ItemAvaliado avaliado = avaliados.get(0);
 
         assertFalse(avaliado.elegivel());

@@ -76,14 +76,14 @@ class DistribuicaoTetoTest {
         List<ItemValidado> idsVerificados = DetectorIdDuplicado.detectar(validados);
         List<ItemValidado> comCambio = CambioTesteSupport.resolverLista(idsVerificados);
         List<ItemNormalizado> normalizados = Normalizador.normalizarLista(comCambio);
-        List<ItemAvaliado> avaliados = AvaliadorRegrasIndividuais.avaliarLista(normalizados, envelope);
+        List<ItemAvaliado> avaliados = CambioTesteSupport.avaliarLista(normalizados, envelope);
         List<ItemAvaliado> aprovados = SeletorElegiveis.selecionar(avaliados);
         List<ItemAvaliado> aposDuplicidade = DetectorDuplicidadeEconomica.detectar(aprovados);
         return SeletorElegiveis.selecionar(aposDuplicidade);
     }
 
     private static List<ResultadoTeto> resultados(String json) {
-        return AgregadorTetoDiario.aplicar(elegiveisParaTetos(json));
+        return CambioTesteSupport.aplicarTetoDiario(elegiveisParaTetos(json));
     }
 
     // ---- 1. Cenário normativo --------------------------------------------------
@@ -170,7 +170,7 @@ class DistribuicaoTetoTest {
         ItemAvaliado indice3 = elegiveis.get(2);
 
         List<ItemAvaliado> foraDeOrdem = List.of(indice3, indice1, indice2);
-        List<ResultadoTeto> resultados = AgregadorTetoDiario.aplicar(foraDeOrdem);
+        List<ResultadoTeto> resultados = CambioTesteSupport.aplicarTetoDiario(foraDeOrdem);
 
         assertEquals(3, resultados.size());
 
@@ -225,8 +225,8 @@ class DistribuicaoTetoTest {
         );
         List<ItemAvaliado> elegiveis = elegiveisParaTetos(json);
 
-        List<ResultadoTeto> primeiraExecucao = AgregadorTetoDiario.aplicar(elegiveis);
-        List<ResultadoTeto> segundaExecucao = AgregadorTetoDiario.aplicar(elegiveis);
+        List<ResultadoTeto> primeiraExecucao = CambioTesteSupport.aplicarTetoDiario(elegiveis);
+        List<ResultadoTeto> segundaExecucao = CambioTesteSupport.aplicarTetoDiario(elegiveis);
 
         assertEquals(primeiraExecucao.size(), segundaExecucao.size());
         for (int i = 0; i < primeiraExecucao.size(); i++) {
@@ -248,7 +248,7 @@ class DistribuicaoTetoTest {
         List<ItemAvaliado> elegiveis = elegiveisParaTetos(json);
         List<ItemAvaliado> copiaAntes = new ArrayList<>(elegiveis);
 
-        List<ResultadoTeto> resultados = AgregadorTetoDiario.aplicar(elegiveis);
+        List<ResultadoTeto> resultados = CambioTesteSupport.aplicarTetoDiario(elegiveis);
 
         assertEquals(copiaAntes, elegiveis);
         assertSame(copiaAntes.get(0), elegiveis.get(0));

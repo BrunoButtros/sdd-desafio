@@ -89,7 +89,7 @@ class DuplicidadeEconomicaTest {
         List<ItemValidado> comIdsVerificados = DetectorIdDuplicado.detectar(validados);
         List<ItemValidado> comCambio = CambioTesteSupport.resolverLista(comIdsVerificados);
         List<ItemNormalizado> normalizados = Normalizador.normalizarLista(comCambio);
-        return AvaliadorRegrasIndividuais.avaliarLista(normalizados, envelope);
+        return CambioTesteSupport.avaliarLista(normalizados, envelope);
     }
 
     private static List<ItemAvaliado> detectarAposSelecao(String json) {

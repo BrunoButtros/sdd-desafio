@@ -82,7 +82,7 @@ class CategoriaForaPoliticaTest {
     void coworking_recebeMotivoEFicaInelegivel() {
         ItemNormalizado item = normalizar(itemComCategoriaEValor("coworking", "89.00", true)).get(0);
 
-        ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item);
+        ItemAvaliado avaliado = CambioTesteSupport.avaliar(item);
 
         assertEquals(1, avaliado.motivos().size());
         Motivo motivo = avaliado.motivos().get(0);
@@ -100,7 +100,7 @@ class CategoriaForaPoliticaTest {
     void categoriasCanonicas_naoRecebemMotivoEPermanecemElegiveis(String categoria) {
         ItemNormalizado item = normalizar(itemComCategoriaEValor(categoria, "50.00", true)).get(0);
 
-        ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item);
+        ItemAvaliado avaliado = CambioTesteSupport.avaliar(item);
 
         assertFalse(avaliado.motivos().contains(categoriaForaPolitica()));
         assertTrue(avaliado.elegivel());
@@ -114,7 +114,7 @@ class CategoriaForaPoliticaTest {
         ItemNormalizado item = normalizar(itemComCategoriaEValor(categoriaInformada, "50.00", true)).get(0);
         assertEquals("alimentacao", item.categoriaNormalizada());
 
-        ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item);
+        ItemAvaliado avaliado = CambioTesteSupport.avaliar(item);
 
         assertFalse(avaliado.motivos().contains(categoriaForaPolitica()));
         assertTrue(avaliado.elegivel());
@@ -126,7 +126,7 @@ class CategoriaForaPoliticaTest {
         ItemNormalizado item = normalizar(itemComCategoriaEValor("transporte urbano", "50.00", true)).get(0);
         assertEquals("transporte urbano", item.categoriaNormalizada());
 
-        ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item);
+        ItemAvaliado avaliado = CambioTesteSupport.avaliar(item);
 
         assertTrue(avaliado.motivos().contains(categoriaForaPolitica()));
         assertFalse(avaliado.elegivel());
@@ -146,7 +146,7 @@ class CategoriaForaPoliticaTest {
         ItemNormalizado item = normalizar(json).get(0);
         assertNull(item.categoriaNormalizada());
 
-        ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item);
+        ItemAvaliado avaliado = CambioTesteSupport.avaliar(item);
 
         assertEquals(1, avaliado.motivos().size());
         assertEquals(MotivoCodigo.CAMPO_AUSENTE, avaliado.motivos().get(0).codigo());
@@ -167,7 +167,7 @@ class CategoriaForaPoliticaTest {
                 """;
         ItemNormalizado item = normalizar(json).get(0);
 
-        ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item);
+        ItemAvaliado avaliado = CambioTesteSupport.avaliar(item);
 
         assertEquals(2, avaliado.motivos().size());
         assertEquals(MotivoCodigo.CAMPO_FORMATO_INVALIDO, avaliado.motivos().get(0).codigo());
@@ -190,7 +190,7 @@ class CategoriaForaPoliticaTest {
         List<ItemValidado> comIdDuplicado = DetectorIdDuplicado.detectar(validados);
         List<ItemValidado> comCambio = CambioTesteSupport.resolverLista(comIdDuplicado);
         List<ItemNormalizado> normalizados = Normalizador.normalizarLista(comCambio);
-        List<ItemAvaliado> avaliados = AvaliadorRegrasIndividuais.avaliarLista(normalizados);
+        List<ItemAvaliado> avaliados = CambioTesteSupport.avaliarLista(normalizados);
 
         ItemAvaliado primeiro = avaliados.get(0);
         assertEquals(2, primeiro.motivos().size());
@@ -204,7 +204,7 @@ class CategoriaForaPoliticaTest {
     void valorNegativoComCoworking_recebeAmbosMotivosNaOrdem() {
         ItemNormalizado item = normalizar(itemComCategoriaEValor("coworking", "-10.00", true)).get(0);
 
-        ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item);
+        ItemAvaliado avaliado = CambioTesteSupport.avaliar(item);
 
         assertEquals(2, avaliado.motivos().size());
         assertEquals(MotivoCodigo.VALOR_NAO_POSITIVO, avaliado.motivos().get(0).codigo());
@@ -218,7 +218,7 @@ class CategoriaForaPoliticaTest {
     void valorNegativoComCategoriaValida_naoRecebeCategoriaForaPolitica() {
         ItemNormalizado item = normalizar(itemComCategoriaEValor("alimentacao", "-10.00", true)).get(0);
 
-        ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item);
+        ItemAvaliado avaliado = CambioTesteSupport.avaliar(item);
 
         assertEquals(1, avaliado.motivos().size());
         assertEquals(MotivoCodigo.VALOR_NAO_POSITIVO, avaliado.motivos().get(0).codigo());
@@ -238,7 +238,7 @@ class CategoriaForaPoliticaTest {
                   ]
                 }
                 """;
-        List<ItemAvaliado> avaliados = AvaliadorRegrasIndividuais.avaliarLista(normalizar(json));
+        List<ItemAvaliado> avaliados = CambioTesteSupport.avaliarLista(normalizar(json));
 
         List<ItemAvaliado> elegiveis = avaliados.stream()
                 .filter(ItemAvaliado::elegivel)
@@ -260,7 +260,7 @@ class CategoriaForaPoliticaTest {
                 }
                 """;
         List<ItemNormalizado> normalizados = normalizar(json);
-        List<ItemAvaliado> avaliados = AvaliadorRegrasIndividuais.avaliarLista(normalizados);
+        List<ItemAvaliado> avaliados = CambioTesteSupport.avaliarLista(normalizados);
 
         assertEquals(2, avaliados.size());
         assertEquals(1, avaliados.get(0).itemNormalizado().item().getIndiceEntrada());
@@ -278,8 +278,8 @@ class CategoriaForaPoliticaTest {
     void reaplicacao_naoDuplicaMotivo() {
         ItemNormalizado item = normalizar(itemComCategoriaEValor("coworking", "89.00", true)).get(0);
 
-        ItemAvaliado primeiraAplicacao = AvaliadorRegrasIndividuais.avaliar(item);
-        ItemAvaliado segundaAplicacao = AvaliadorRegrasIndividuais.avaliar(item);
+        ItemAvaliado primeiraAplicacao = CambioTesteSupport.avaliar(item);
+        ItemAvaliado segundaAplicacao = CambioTesteSupport.avaliar(item);
 
         assertEquals(1, primeiraAplicacao.motivos().size());
         assertEquals(1, segundaAplicacao.motivos().size());

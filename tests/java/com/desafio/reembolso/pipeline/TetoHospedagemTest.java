@@ -80,14 +80,14 @@ class TetoHospedagemTest {
         List<ItemValidado> idsVerificados = DetectorIdDuplicado.detectar(validados);
         List<ItemValidado> comCambio = CambioTesteSupport.resolverLista(idsVerificados);
         List<ItemNormalizado> normalizados = Normalizador.normalizarLista(comCambio);
-        List<ItemAvaliado> avaliados = AvaliadorRegrasIndividuais.avaliarLista(normalizados, envelope);
+        List<ItemAvaliado> avaliados = CambioTesteSupport.avaliarLista(normalizados, envelope);
         List<ItemAvaliado> aprovados = SeletorElegiveis.selecionar(avaliados);
         List<ItemAvaliado> aposDuplicidade = DetectorDuplicidadeEconomica.detectar(aprovados);
         return SeletorElegiveis.selecionar(aposDuplicidade);
     }
 
     private static List<ResultadoTeto> resultados(String json) {
-        return AgregadorTetoHospedagem.aplicar(elegiveisParaTetos(json));
+        return CambioTesteSupport.aplicarTetoIndividual(elegiveisParaTetos(json));
     }
 
     private static ItemAvaliado itemAvaliadoHospedagem(int indiceEntrada, String id, LocalDate data,
@@ -95,7 +95,8 @@ class TetoHospedagemTest {
                                                          BigDecimal valor, boolean elegivel) {
         ItemValidado validado = new ItemValidado(
                 indiceEntrada, id, data, "hospedagem", descricao, fornecedor,
-                valor, true, null, List.of());
+                valor, true, null, List.of(),
+                "BRL", BigDecimal.ONE, null, valor);
         ItemNormalizado normalizado = new ItemNormalizado(validado, valor, "hospedagem");
         List<Motivo> motivos = elegivel
                 ? List.of()
@@ -311,7 +312,7 @@ class TetoHospedagemTest {
         ItemAvaliado indice3 = elegiveis.get(2);
 
         List<ItemAvaliado> foraDeOrdem = List.of(indice3, indice1, indice2);
-        List<ResultadoTeto> resultados = AgregadorTetoHospedagem.aplicar(foraDeOrdem);
+        List<ResultadoTeto> resultados = CambioTesteSupport.aplicarTetoIndividual(foraDeOrdem);
 
         assertEquals(3, resultados.size());
         assertEquals(3, resultados.get(0).itemAvaliado().itemNormalizado().item().getIndiceEntrada());
@@ -336,7 +337,7 @@ class TetoHospedagemTest {
         assertEquals(3, elegiveis.size());
         List<ItemAvaliado> copiaAntes = new ArrayList<>(elegiveis);
 
-        List<ResultadoTeto> resultados = AgregadorTetoHospedagem.aplicar(elegiveis);
+        List<ResultadoTeto> resultados = CambioTesteSupport.aplicarTetoIndividual(elegiveis);
 
         assertEquals(1, resultados.size());
         assertEquals("hospedagem", resultados.get(0).itemAvaliado().itemNormalizado().categoriaNormalizada());
@@ -360,7 +361,7 @@ class TetoHospedagemTest {
         List<ItemAvaliado> elegiveis = elegiveisParaTetos(json);
         assertTrue(elegiveis.isEmpty());
 
-        List<ResultadoTeto> resultados = AgregadorTetoHospedagem.aplicar(elegiveis);
+        List<ResultadoTeto> resultados = CambioTesteSupport.aplicarTetoIndividual(elegiveis);
         assertTrue(resultados.isEmpty());
     }
 
@@ -373,7 +374,7 @@ class TetoHospedagemTest {
         ItemAvaliado elegivel = itemAvaliadoHospedagem(
                 2, "d-eleg", data, "Estadia", "Hotel B", new BigDecimal("480.00"), true);
 
-        List<ResultadoTeto> resultados = AgregadorTetoHospedagem.aplicar(List.of(inelegivel, elegivel));
+        List<ResultadoTeto> resultados = CambioTesteSupport.aplicarTetoIndividual(List.of(inelegivel, elegivel));
 
         assertEquals(1, resultados.size());
         ResultadoTeto resultado = resultados.get(0);
@@ -417,7 +418,7 @@ class TetoHospedagemTest {
         List<ItemAvaliado> elegiveis = elegiveisParaTetos(json);
         List<ItemAvaliado> copiaAntes = new ArrayList<>(elegiveis);
 
-        List<ResultadoTeto> resultados = AgregadorTetoHospedagem.aplicar(elegiveis);
+        List<ResultadoTeto> resultados = CambioTesteSupport.aplicarTetoIndividual(elegiveis);
 
         assertEquals(copiaAntes, elegiveis);
         assertSame(copiaAntes.get(0), elegiveis.get(0));
@@ -435,7 +436,7 @@ class TetoHospedagemTest {
     @Test
     @DisplayName("15 — lista vazia retorna lista vazia e não modificável")
     void listaVazia_retornaListaVaziaNaoModificavel() {
-        List<ResultadoTeto> resultados = AgregadorTetoHospedagem.aplicar(List.of());
+        List<ResultadoTeto> resultados = CambioTesteSupport.aplicarTetoIndividual(List.of());
 
         assertTrue(resultados.isEmpty());
         assertThrows(UnsupportedOperationException.class,
@@ -453,8 +454,8 @@ class TetoHospedagemTest {
         );
         List<ItemAvaliado> elegiveis = elegiveisParaTetos(json);
 
-        List<ResultadoTeto> primeiraExecucao = AgregadorTetoHospedagem.aplicar(elegiveis);
-        List<ResultadoTeto> segundaExecucao = AgregadorTetoHospedagem.aplicar(elegiveis);
+        List<ResultadoTeto> primeiraExecucao = CambioTesteSupport.aplicarTetoIndividual(elegiveis);
+        List<ResultadoTeto> segundaExecucao = CambioTesteSupport.aplicarTetoIndividual(elegiveis);
 
         assertEquals(primeiraExecucao.size(), segundaExecucao.size());
         for (int i = 0; i < primeiraExecucao.size(); i++) {

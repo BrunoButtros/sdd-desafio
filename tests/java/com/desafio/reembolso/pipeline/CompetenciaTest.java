@@ -97,7 +97,7 @@ class CompetenciaTest {
         Envelope envelope = envelope(json);
         ItemNormalizado item = normalizarDespesas(envelope).get(0);
 
-        ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item, envelope);
+        ItemAvaliado avaliado = CambioTesteSupport.avaliar(item, envelope);
 
         assertEquals(1, avaliado.motivos().size());
         Motivo motivo = avaliado.motivos().get(0);
@@ -116,7 +116,7 @@ class CompetenciaTest {
         Envelope envelope = envelope(json);
         ItemNormalizado item = normalizarDespesas(envelope).get(0);
 
-        ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item, envelope);
+        ItemAvaliado avaliado = CambioTesteSupport.avaliar(item, envelope);
 
         assertTrue(avaliado.motivos().contains(foraCompetencia()));
         assertFalse(avaliado.elegivel());
@@ -129,7 +129,7 @@ class CompetenciaTest {
         Envelope envelope = envelope(json);
         ItemNormalizado item = normalizarDespesas(envelope).get(0);
 
-        ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item, envelope);
+        ItemAvaliado avaliado = CambioTesteSupport.avaliar(item, envelope);
 
         assertFalse(avaliado.motivos().contains(foraCompetencia()));
         assertTrue(avaliado.elegivel());
@@ -143,7 +143,7 @@ class CompetenciaTest {
         Envelope envelope = envelope(json);
         ItemNormalizado item = normalizarDespesas(envelope).get(0);
 
-        ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item, envelope);
+        ItemAvaliado avaliado = CambioTesteSupport.avaliar(item, envelope);
 
         assertFalse(avaliado.motivos().contains(foraCompetencia()));
         assertTrue(avaliado.elegivel());
@@ -156,7 +156,7 @@ class CompetenciaTest {
         Envelope envelope = envelope(json);
         ItemNormalizado item = normalizarDespesas(envelope).get(0);
 
-        ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item, envelope);
+        ItemAvaliado avaliado = CambioTesteSupport.avaliar(item, envelope);
 
         assertTrue(avaliado.elegivel());
         assertFalse(avaliado.motivos().contains(foraCompetencia()));
@@ -178,7 +178,7 @@ class CompetenciaTest {
         ItemNormalizado item = normalizarDespesas(envelope).get(0);
         assertNull(item.item().getData());
 
-        ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item, envelope);
+        ItemAvaliado avaliado = CambioTesteSupport.avaliar(item, envelope);
 
         assertEquals(1, avaliado.motivos().size());
         assertEquals(MotivoCodigo.CAMPO_FORMATO_INVALIDO, avaliado.motivos().get(0).codigo());
@@ -202,7 +202,7 @@ class CompetenciaTest {
         Envelope envelope = envelope(json);
         ItemNormalizado item = normalizarDespesas(envelope).get(0);
 
-        ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item, envelope);
+        ItemAvaliado avaliado = CambioTesteSupport.avaliar(item, envelope);
 
         assertEquals(2, avaliado.motivos().size());
         assertEquals(MotivoCodigo.CAMPO_TIPO_INVALIDO, avaliado.motivos().get(0).codigo());
@@ -228,7 +228,7 @@ class CompetenciaTest {
         List<ItemValidado> comIdDuplicado = DetectorIdDuplicado.detectar(validados);
         List<ItemValidado> comCambio = CambioTesteSupport.resolverLista(comIdDuplicado);
         List<ItemNormalizado> normalizados = Normalizador.normalizarLista(comCambio);
-        List<ItemAvaliado> avaliados = AvaliadorRegrasIndividuais.avaliarLista(normalizados, envelope);
+        List<ItemAvaliado> avaliados = CambioTesteSupport.avaliarLista(normalizados, envelope);
 
         ItemAvaliado primeiro = avaliados.get(0);
         assertEquals(2, primeiro.motivos().size());
@@ -244,7 +244,7 @@ class CompetenciaTest {
         Envelope envelope = envelope(json);
         ItemNormalizado item = normalizarDespesas(envelope).get(0);
 
-        ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item, envelope);
+        ItemAvaliado avaliado = CambioTesteSupport.avaliar(item, envelope);
 
         assertEquals(2, avaliado.motivos().size());
         assertEquals(MotivoCodigo.VALOR_NAO_POSITIVO, avaliado.motivos().get(0).codigo());
@@ -259,7 +259,7 @@ class CompetenciaTest {
         Envelope envelope = envelope(json);
         ItemNormalizado item = normalizarDespesas(envelope).get(0);
 
-        ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item, envelope);
+        ItemAvaliado avaliado = CambioTesteSupport.avaliar(item, envelope);
 
         assertEquals(2, avaliado.motivos().size());
         assertEquals(MotivoCodigo.CATEGORIA_FORA_POLITICA, avaliado.motivos().get(0).codigo());
@@ -274,7 +274,7 @@ class CompetenciaTest {
         Envelope envelope = envelope(json);
         ItemNormalizado item = normalizarDespesas(envelope).get(0);
 
-        ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item, envelope);
+        ItemAvaliado avaliado = CambioTesteSupport.avaliar(item, envelope);
 
         assertEquals(3, avaliado.motivos().size());
         assertEquals(MotivoCodigo.VALOR_NAO_POSITIVO, avaliado.motivos().get(0).codigo());
@@ -299,7 +299,7 @@ class CompetenciaTest {
         assertEquals("2026-04", envelope.getPeriodoCompetencia());
         ItemNormalizado item = normalizarDespesas(envelope).get(0);
 
-        ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item, envelope);
+        ItemAvaliado avaliado = CambioTesteSupport.avaliar(item, envelope);
 
         assertFalse(avaliado.motivos().contains(foraCompetencia()));
         assertTrue(avaliado.elegivel());
@@ -323,7 +323,7 @@ class CompetenciaTest {
         Envelope envelope = envelope(json);
         List<ItemNormalizado> normalizados =
                 normalizarDespesas(envelope);
-        List<ItemAvaliado> avaliados = AvaliadorRegrasIndividuais.avaliarLista(normalizados, envelope);
+        List<ItemAvaliado> avaliados = CambioTesteSupport.avaliarLista(normalizados, envelope);
 
         List<String> idsElegiveis = avaliados.stream()
                 .filter(ItemAvaliado::elegivel)
@@ -348,7 +348,7 @@ class CompetenciaTest {
         Envelope envelope = envelope(json);
         List<ItemNormalizado> normalizados =
                 normalizarDespesas(envelope);
-        List<ItemAvaliado> avaliados = AvaliadorRegrasIndividuais.avaliarLista(normalizados, envelope);
+        List<ItemAvaliado> avaliados = CambioTesteSupport.avaliarLista(normalizados, envelope);
 
         assertEquals(2, avaliados.size());
         assertEquals(1, avaliados.get(0).itemNormalizado().item().getIndiceEntrada());
@@ -368,8 +368,8 @@ class CompetenciaTest {
         Envelope envelope = envelope(json);
         ItemNormalizado item = normalizarDespesas(envelope).get(0);
 
-        ItemAvaliado primeiraAplicacao = AvaliadorRegrasIndividuais.avaliar(item, envelope);
-        ItemAvaliado segundaAplicacao = AvaliadorRegrasIndividuais.avaliar(item, envelope);
+        ItemAvaliado primeiraAplicacao = CambioTesteSupport.avaliar(item, envelope);
+        ItemAvaliado segundaAplicacao = CambioTesteSupport.avaliar(item, envelope);
 
         assertEquals(1, primeiraAplicacao.motivos().size());
         assertEquals(1, segundaAplicacao.motivos().size());

@@ -78,7 +78,7 @@ class ValorNaoPositivoTest {
     void valorNegativo_recebeMotivoEFicaInelegivel() {
         ItemNormalizado item = normalizar(itemComValor("-45.00")).get(0);
 
-        ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item);
+        ItemAvaliado avaliado = CambioTesteSupport.avaliar(item);
 
         assertEquals(1, avaliado.motivos().size());
         Motivo motivo = avaliado.motivos().get(0);
@@ -96,7 +96,7 @@ class ValorNaoPositivoTest {
         ItemNormalizado item = normalizar(itemComValor("0")).get(0);
         assertEquals(new BigDecimal("0.00"), item.valorNormalizado());
 
-        ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item);
+        ItemAvaliado avaliado = CambioTesteSupport.avaliar(item);
 
         assertTrue(avaliado.motivos().contains(valorNaoPositivo()));
         assertFalse(avaliado.elegivel());
@@ -108,7 +108,7 @@ class ValorNaoPositivoTest {
         ItemNormalizado item = normalizar(itemComValor("0.004")).get(0);
         assertEquals(new BigDecimal("0.00"), item.valorNormalizado());
 
-        ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item);
+        ItemAvaliado avaliado = CambioTesteSupport.avaliar(item);
 
         assertTrue(avaliado.motivos().contains(valorNaoPositivo()));
         assertFalse(avaliado.elegivel());
@@ -120,7 +120,7 @@ class ValorNaoPositivoTest {
         ItemNormalizado item = normalizar(itemComValor("0.005")).get(0);
         assertEquals(new BigDecimal("0.01"), item.valorNormalizado());
 
-        ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item);
+        ItemAvaliado avaliado = CambioTesteSupport.avaliar(item);
 
         assertFalse(avaliado.motivos().contains(valorNaoPositivo()));
         assertTrue(avaliado.elegivel());
@@ -132,7 +132,7 @@ class ValorNaoPositivoTest {
         ItemNormalizado item = normalizar(itemComValor("72")).get(0);
         assertEquals(new BigDecimal("72.00"), item.valorNormalizado());
 
-        ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item);
+        ItemAvaliado avaliado = CambioTesteSupport.avaliar(item);
 
         assertTrue(avaliado.motivos().isEmpty());
         assertTrue(avaliado.elegivel());
@@ -153,7 +153,7 @@ class ValorNaoPositivoTest {
         ItemNormalizado item = normalizar(json).get(0);
         assertNull(item.valorNormalizado());
 
-        ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item);
+        ItemAvaliado avaliado = CambioTesteSupport.avaliar(item);
 
         assertEquals(1, avaliado.motivos().size());
         assertEquals(MotivoCodigo.CAMPO_TIPO_INVALIDO, avaliado.motivos().get(0).codigo());
@@ -177,7 +177,7 @@ class ValorNaoPositivoTest {
         assertNull(item.valorNormalizado(),
                 "sem data estruturalmente válida, ResolutorCambio não resolve o item e valorConvertidoBruto permanece nulo (RN-020)");
 
-        ItemAvaliado avaliado = AvaliadorRegrasIndividuais.avaliar(item);
+        ItemAvaliado avaliado = CambioTesteSupport.avaliar(item);
 
         assertEquals(1, avaliado.motivos().size());
         assertEquals(MotivoCodigo.CAMPO_FORMATO_INVALIDO, avaliado.motivos().get(0).codigo());
@@ -202,7 +202,7 @@ class ValorNaoPositivoTest {
         List<ItemValidado> comIdDuplicado = DetectorIdDuplicado.detectar(validados);
         List<ItemValidado> comCambio = CambioTesteSupport.resolverLista(comIdDuplicado);
         List<ItemNormalizado> normalizados = Normalizador.normalizarLista(comCambio);
-        List<ItemAvaliado> avaliados = AvaliadorRegrasIndividuais.avaliarLista(normalizados);
+        List<ItemAvaliado> avaliados = CambioTesteSupport.avaliarLista(normalizados);
 
         ItemAvaliado primeiro = avaliados.get(0);
         assertEquals(2, primeiro.motivos().size());
@@ -226,7 +226,7 @@ class ValorNaoPositivoTest {
         List<ItemValidado> comIdDuplicado = DetectorIdDuplicado.detectar(validados);
         List<ItemValidado> comCambio = CambioTesteSupport.resolverLista(comIdDuplicado);
         List<ItemNormalizado> normalizados = Normalizador.normalizarLista(comCambio);
-        List<ItemAvaliado> avaliados = AvaliadorRegrasIndividuais.avaliarLista(normalizados);
+        List<ItemAvaliado> avaliados = CambioTesteSupport.avaliarLista(normalizados);
 
         ItemAvaliado primeiro = avaliados.get(0);
         assertEquals(1, primeiro.motivos().size());
@@ -247,7 +247,7 @@ class ValorNaoPositivoTest {
                   ]
                 }
                 """;
-        List<ItemAvaliado> avaliados = AvaliadorRegrasIndividuais.avaliarLista(normalizar(json));
+        List<ItemAvaliado> avaliados = CambioTesteSupport.avaliarLista(normalizar(json));
 
         List<ItemAvaliado> elegiveis = avaliados.stream()
                 .filter(ItemAvaliado::elegivel)
@@ -269,7 +269,7 @@ class ValorNaoPositivoTest {
                 }
                 """;
         List<ItemNormalizado> normalizados = normalizar(json);
-        List<ItemAvaliado> avaliados = AvaliadorRegrasIndividuais.avaliarLista(normalizados);
+        List<ItemAvaliado> avaliados = CambioTesteSupport.avaliarLista(normalizados);
 
         assertEquals(2, avaliados.size());
         assertEquals(1, avaliados.get(0).itemNormalizado().item().getIndiceEntrada());
@@ -287,8 +287,8 @@ class ValorNaoPositivoTest {
     void reaplicacao_naoDuplicaMotivo() {
         ItemNormalizado item = normalizar(itemComValor("-45.00")).get(0);
 
-        ItemAvaliado primeiraAplicacao = AvaliadorRegrasIndividuais.avaliar(item);
-        ItemAvaliado segundaAplicacao = AvaliadorRegrasIndividuais.avaliar(item);
+        ItemAvaliado primeiraAplicacao = CambioTesteSupport.avaliar(item);
+        ItemAvaliado segundaAplicacao = CambioTesteSupport.avaliar(item);
 
         assertEquals(1, primeiraAplicacao.motivos().size());
         assertEquals(1, segundaAplicacao.motivos().size());

@@ -77,14 +77,14 @@ class ReembolsoParcialTest {
         List<ItemValidado> idsVerificados = DetectorIdDuplicado.detectar(validados);
         List<ItemValidado> comCambio = CambioTesteSupport.resolverLista(idsVerificados);
         List<ItemNormalizado> normalizados = Normalizador.normalizarLista(comCambio);
-        List<ItemAvaliado> avaliados = AvaliadorRegrasIndividuais.avaliarLista(normalizados, envelope);
+        List<ItemAvaliado> avaliados = CambioTesteSupport.avaliarLista(normalizados, envelope);
         List<ItemAvaliado> aprovados = SeletorElegiveis.selecionar(avaliados);
         List<ItemAvaliado> aposDuplicidade = DetectorDuplicidadeEconomica.detectar(aprovados);
         return SeletorElegiveis.selecionar(aposDuplicidade);
     }
 
     private static List<ResultadoTeto> resultados(String json) {
-        return AgregadorTetoDiario.aplicar(elegiveisParaTetos(json));
+        return CambioTesteSupport.aplicarTetoDiario(elegiveisParaTetos(json));
     }
 
     // ---- 1. Alimentação R$ 61,00 sozinha -------------------------------------
@@ -157,7 +157,7 @@ class ReembolsoParcialTest {
         List<ItemAvaliado> elegiveis = elegiveisParaTetos(json);
         ItemAvaliado original = elegiveis.get(0);
 
-        List<ResultadoTeto> resultados = AgregadorTetoDiario.aplicar(elegiveis);
+        List<ResultadoTeto> resultados = CambioTesteSupport.aplicarTetoDiario(elegiveis);
 
         assertSame(original, resultados.get(0).itemAvaliado());
         assertTrue(original.elegivel());

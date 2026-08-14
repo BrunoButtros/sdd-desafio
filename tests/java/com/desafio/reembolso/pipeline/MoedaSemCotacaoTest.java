@@ -36,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * histórica com {@link Envelope}) e, quando o cenário exige provar exclusão
  * antes da duplicidade ou dos tetos, também {@link SeletorElegiveis},
  * {@link DetectorDuplicidadeEconomica} e os agregadores históricos
- * ({@link AgregadorTetoDiario}, {@link AgregadorTetoHospedagem}). Nenhuma
+ * ({@link AgregadorTetoDiario}, {@link AgregadorTetoIndividual}). Nenhuma
  * lógica de componente é reproduzida manualmente.
  */
 @DisplayName("MOEDA_SEM_COTACAO — coexistência e exclusão de motivos (8.4, item 14, RN-020)")
@@ -82,7 +82,7 @@ class MoedaSemCotacaoTest {
         List<ItemValidado> semIdDuplicado = DetectorIdDuplicado.detectar(validados);
         List<ItemValidado> comCambio = ResolutorCambio.resolverLista(semIdDuplicado, cambio);
         List<ItemNormalizado> normalizados = Normalizador.normalizarLista(comCambio);
-        return AvaliadorRegrasIndividuais.avaliarLista(normalizados, envelope);
+        return CambioTesteSupport.avaliarLista(normalizados, envelope);
     }
 
     private static boolean contemCodigo(List<Motivo> motivos, MotivoCodigo codigo) {
@@ -203,7 +203,7 @@ class MoedaSemCotacaoTest {
         List<ItemNormalizado> normalizados = Normalizador.normalizarLista(comCambio);
         assertNull(normalizados.get(0).valorNormalizado(), "pré-condição: sem cotação, sem valor normalizado");
 
-        List<ItemAvaliado> avaliados = AvaliadorRegrasIndividuais.avaliarLista(normalizados, envelope);
+        List<ItemAvaliado> avaliados = CambioTesteSupport.avaliarLista(normalizados, envelope);
         ItemAvaliado item = avaliados.get(0);
 
         assertFalse(item.elegivel());
@@ -228,7 +228,7 @@ class MoedaSemCotacaoTest {
         List<ItemNormalizado> normalizados = Normalizador.normalizarLista(comCambio);
         assertNull(normalizados.get(0).valorNormalizado(), "pré-condição: sem cotação, sem valor normalizado");
 
-        List<ItemAvaliado> avaliados = AvaliadorRegrasIndividuais.avaliarLista(normalizados, envelope);
+        List<ItemAvaliado> avaliados = CambioTesteSupport.avaliarLista(normalizados, envelope);
         ItemAvaliado item = avaliados.get(0);
 
         assertFalse(item.elegivel());
@@ -358,15 +358,15 @@ class MoedaSemCotacaoTest {
         assertFalse(contemId(elegiveis2, "d-201"));
         assertFalse(contemId(elegiveis2, "d-202"));
 
-        List<ResultadoTeto> resultadoDiario = AgregadorTetoDiario.aplicar(elegiveis2);
-        List<ResultadoTeto> resultadoHospedagem = AgregadorTetoHospedagem.aplicar(elegiveis2);
+        List<ResultadoTeto> resultadoDiario = CambioTesteSupport.aplicarTetoDiario(elegiveis2);
+        List<ResultadoTeto> resultadoHospedagem = CambioTesteSupport.aplicarTetoIndividual(elegiveis2);
 
         assertTrue(resultadoDiario.stream()
                 .noneMatch(r -> "d-201".equals(r.itemAvaliado().itemNormalizado().item().getId())),
                 "item de MOEDA_SEM_COTACAO não aparece no ResultadoTeto de AgregadorTetoDiario");
         assertTrue(resultadoHospedagem.stream()
                 .noneMatch(r -> "d-202".equals(r.itemAvaliado().itemNormalizado().item().getId())),
-                "item de MOEDA_SEM_COTACAO não aparece no ResultadoTeto de AgregadorTetoHospedagem");
+                "item de MOEDA_SEM_COTACAO não aparece no ResultadoTeto de AgregadorTetoIndividual");
 
         assertEquals(1, resultadoDiario.size(),
                 "único item que chega ao AgregadorTetoDiario é o controle BRL — o de MOEDA_SEM_COTACAO já foi excluído");
@@ -375,7 +375,7 @@ class MoedaSemCotacaoTest {
         assertEquals("d-204", resultadoHospedagem.get(0).itemAvaliado().itemNormalizado().item().getId());
 
         // Provas sobre os objetos ORIGINAIS d201/d202, depois de todo o fluxo real (SeletorElegiveis →
-        // DetectorDuplicidadeEconomica → SeletorElegiveis → AgregadorTetoDiario → AgregadorTetoHospedagem):
+        // DetectorDuplicidadeEconomica → SeletorElegiveis → AgregadorTetoDiario → AgregadorTetoIndividual):
         // eles nunca entraram nessas etapas, então nada nesses objetos pode ter mudado.
         assertEquals(1, contagemCodigo(d201.motivos(), MotivoCodigo.MOEDA_SEM_COTACAO));
         assertEquals(1, contagemCodigo(d202.motivos(), MotivoCodigo.MOEDA_SEM_COTACAO));

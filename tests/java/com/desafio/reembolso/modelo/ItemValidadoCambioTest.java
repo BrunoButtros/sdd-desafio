@@ -11,16 +11,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
- * Cobre T-029 (RN-002 / RN-020, plan §4/§9, DT-014): compatibilidade do
- * construtor de dez argumentos de {@link ItemValidado} via delegação para o
- * novo construtor de catorze argumentos, e preservação exata dos quatro
- * campos de câmbio quando o construtor de catorze argumentos é usado
- * diretamente.
+ * Cobre T-029/T-055 (RN-002 / RN-020, plan §4/§9, DT-014): preservação
+ * exata dos quatro campos de câmbio pelo construtor completo de catorze
+ * argumentos, inclusive para estados BRL e para nulos explícitos.
  */
 @DisplayName("ItemValidado — campos de câmbio (T-029)")
 class ItemValidadoCambioTest {
 
-    private static ItemValidado construirComConstrutorAntigo(BigDecimal valor) {
+    private static ItemValidado construirBrlResolvido(BigDecimal valor) {
         return new ItemValidado(
                 1,
                 "d-001",
@@ -31,15 +29,19 @@ class ItemValidadoCambioTest {
                 valor,
                 true,
                 null,
-                List.of());
+                List.of(),
+                "BRL",
+                BigDecimal.ONE,
+                null,
+                valor);
     }
 
     @Test
-    @DisplayName("construtor de dez argumentos assume moeda BRL, taxa 1, data nula e valorConvertidoBruto igual ao valor recebido")
-    void construtorAntigo_assumeValoresPadraoDeBrl() {
+    @DisplayName("construtor completo preserva estado BRL resolvido com taxa 1, data nula e valor convertido bruto")
+    void construtorCompleto_preservaEstadoBrlResolvido() {
         BigDecimal valor = new BigDecimal("33.33");
 
-        ItemValidado item = construirComConstrutorAntigo(valor);
+        ItemValidado item = construirBrlResolvido(valor);
 
         assertEquals("BRL", item.getMoeda());
         assertEquals(0, BigDecimal.ONE.compareTo(item.getTaxaCambioAplicada()));
@@ -48,9 +50,9 @@ class ItemValidadoCambioTest {
     }
 
     @Test
-    @DisplayName("construtor de dez argumentos com valor nulo produz valorConvertidoBruto nulo")
-    void construtorAntigo_comValorNulo_valorConvertidoBrutoNulo() {
-        ItemValidado item = construirComConstrutorAntigo(null);
+    @DisplayName("construtor completo preserva estado BRL resolvido com valor bruto nulo")
+    void construtorCompleto_comValorNulo_preservaValorConvertidoBrutoNulo() {
+        ItemValidado item = construirBrlResolvido(null);
 
         assertEquals("BRL", item.getMoeda());
         assertEquals(0, BigDecimal.ONE.compareTo(item.getTaxaCambioAplicada()));

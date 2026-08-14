@@ -77,14 +77,14 @@ class TetoDiarioTest {
         List<ItemValidado> idsVerificados = DetectorIdDuplicado.detectar(validados);
         List<ItemValidado> comCambio = CambioTesteSupport.resolverLista(idsVerificados);
         List<ItemNormalizado> normalizados = Normalizador.normalizarLista(comCambio);
-        List<ItemAvaliado> avaliados = AvaliadorRegrasIndividuais.avaliarLista(normalizados, envelope);
+        List<ItemAvaliado> avaliados = CambioTesteSupport.avaliarLista(normalizados, envelope);
         List<ItemAvaliado> aprovados = SeletorElegiveis.selecionar(avaliados);
         List<ItemAvaliado> aposDuplicidade = DetectorDuplicidadeEconomica.detectar(aprovados);
         return SeletorElegiveis.selecionar(aposDuplicidade);
     }
 
     private static List<ResultadoTeto> resultados(String json) {
-        return AgregadorTetoDiario.aplicar(elegiveisParaTetos(json));
+        return CambioTesteSupport.aplicarTetoDiario(elegiveisParaTetos(json));
     }
 
     // ---- 1. Duas despesas de alimentação na mesma data ----------------------
@@ -209,7 +209,7 @@ class TetoDiarioTest {
         List<ItemAvaliado> elegiveis = elegiveisParaTetos(json);
         assertEquals(2, elegiveis.size());
 
-        List<ResultadoTeto> resultados = AgregadorTetoDiario.aplicar(elegiveis);
+        List<ResultadoTeto> resultados = CambioTesteSupport.aplicarTetoDiario(elegiveis);
 
         assertEquals(1, resultados.size());
         assertEquals("alimentacao", resultados.get(0).itemAvaliado().itemNormalizado().categoriaNormalizada());
@@ -225,7 +225,8 @@ class TetoDiarioTest {
 
         ItemValidado validadoInelegivel = new ItemValidado(
                 1, "d-inel", data, "alimentacao", "Item", "F1",
-                new BigDecimal("999.00"), true, null, List.of());
+                new BigDecimal("999.00"), true, null, List.of(),
+                "BRL", BigDecimal.ONE, null, new BigDecimal("999.00"));
         ItemNormalizado normalizadoInelegivel =
                 new ItemNormalizado(validadoInelegivel, new BigDecimal("999.00"), "alimentacao");
         ItemAvaliado inelegivel = new ItemAvaliado(
@@ -236,12 +237,13 @@ class TetoDiarioTest {
 
         ItemValidado validadoElegivel = new ItemValidado(
                 2, "d-eleg", data, "alimentacao", "Item", "F1",
-                new BigDecimal("60.00"), true, null, List.of());
+                new BigDecimal("60.00"), true, null, List.of(),
+                "BRL", BigDecimal.ONE, null, new BigDecimal("60.00"));
         ItemNormalizado normalizadoElegivel =
                 new ItemNormalizado(validadoElegivel, new BigDecimal("60.00"), "alimentacao");
         ItemAvaliado elegivel = new ItemAvaliado(normalizadoElegivel, List.of(), true, null);
 
-        List<ResultadoTeto> resultados = AgregadorTetoDiario.aplicar(List.of(inelegivel, elegivel));
+        List<ResultadoTeto> resultados = CambioTesteSupport.aplicarTetoDiario(List.of(inelegivel, elegivel));
 
         assertEquals(1, resultados.size());
         ResultadoTeto resultado = resultados.get(0);

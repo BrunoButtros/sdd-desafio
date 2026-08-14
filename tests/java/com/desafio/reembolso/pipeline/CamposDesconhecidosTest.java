@@ -126,20 +126,20 @@ class CamposDesconhecidosTest {
         List<ItemValidado> idsVerificados = DetectorIdDuplicado.detectar(validados);
         List<ItemValidado> comCambio = CambioTesteSupport.resolverLista(idsVerificados);
         List<ItemNormalizado> normalizados = Normalizador.normalizarLista(comCambio);
-        List<ItemAvaliado> avaliados = AvaliadorRegrasIndividuais.avaliarLista(normalizados, envelope);
+        List<ItemAvaliado> avaliados = CambioTesteSupport.avaliarLista(normalizados, envelope);
         List<ItemAvaliado> aprovados = SeletorElegiveis.selecionar(avaliados);
         List<ItemAvaliado> aposDuplicidade = DetectorDuplicidadeEconomica.detectar(aprovados);
         return SeletorElegiveis.selecionar(aposDuplicidade);
     }
 
     private static ResultadoTeto resultadoDiarioUnico(String json) {
-        List<ResultadoTeto> resultados = AgregadorTetoDiario.aplicar(elegiveisParaTetos(json));
+        List<ResultadoTeto> resultados = CambioTesteSupport.aplicarTetoDiario(elegiveisParaTetos(json));
         assertEquals(1, resultados.size());
         return resultados.get(0);
     }
 
     private static ResultadoTeto resultadoHospedagemUnico(String json) {
-        List<ResultadoTeto> resultados = AgregadorTetoHospedagem.aplicar(elegiveisParaTetos(json));
+        List<ResultadoTeto> resultados = CambioTesteSupport.aplicarTetoIndividual(elegiveisParaTetos(json));
         assertEquals(1, resultados.size());
         return resultados.get(0);
     }

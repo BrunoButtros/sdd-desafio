@@ -137,7 +137,7 @@ class RegraViagemEfeitoNuloTest {
         List<ItemValidado> idsVerificados = DetectorIdDuplicado.detectar(validados);
         List<ItemValidado> comCambio = CambioTesteSupport.resolverLista(idsVerificados, cambio);
         List<ItemNormalizado> normalizados = Normalizador.normalizarLista(comCambio);
-        List<ItemAvaliado> avaliados = AvaliadorRegrasIndividuais.avaliarLista(normalizados, envelope);
+        List<ItemAvaliado> avaliados = CambioTesteSupport.avaliarLista(normalizados, envelope);
         List<ItemAvaliado> aprovados = SeletorElegiveis.selecionar(avaliados);
         List<ItemAvaliado> aposDuplicidade = DetectorDuplicidadeEconomica.detectar(aprovados);
         return SeletorElegiveis.selecionar(aposDuplicidade);
@@ -148,13 +148,13 @@ class RegraViagemEfeitoNuloTest {
     }
 
     private static ResultadoTeto resultadoDiarioUnico(String json, TabelaCambio cambio) {
-        List<ResultadoTeto> resultados = AgregadorTetoDiario.aplicar(elegiveisParaTetos(json, cambio));
+        List<ResultadoTeto> resultados = CambioTesteSupport.aplicarTetoDiario(elegiveisParaTetos(json, cambio));
         assertEquals(1, resultados.size(), "cenário deve produzir exatamente um item elegível de teto diário");
         return resultados.get(0);
     }
 
     private static ResultadoTeto resultadoHospedagemUnico(String json) {
-        List<ResultadoTeto> resultados = AgregadorTetoHospedagem.aplicar(elegiveisParaTetos(json));
+        List<ResultadoTeto> resultados = CambioTesteSupport.aplicarTetoIndividual(elegiveisParaTetos(json));
         assertEquals(1, resultados.size(), "cenário deve produzir exatamente um item elegível de teto de hospedagem");
         return resultados.get(0);
     }
@@ -301,7 +301,7 @@ class RegraViagemEfeitoNuloTest {
                     "item de alimentação nunca deve receber o motivo de teto de hospedagem (RN-013)");
         }
 
-        List<ResultadoTeto> resultadosHospedagem = AgregadorTetoHospedagem.aplicar(elegiveisParaTetos(json));
+        List<ResultadoTeto> resultadosHospedagem = CambioTesteSupport.aplicarTetoIndividual(elegiveisParaTetos(json));
         assertEquals(0, resultadosHospedagem.size(),
                 "o item de alimentação não deve ser alcançado pelo agregador de hospedagem");
     }
@@ -318,11 +318,11 @@ class RegraViagemEfeitoNuloTest {
         List<ItemAvaliado> elegiveis = elegiveisParaTetos(json);
         assertEquals(2, elegiveis.size(), "alimentação e hospedagem não devem colidir por duplicidade econômica");
 
-        List<ResultadoTeto> resultadosDiario = AgregadorTetoDiario.aplicar(elegiveis);
+        List<ResultadoTeto> resultadosDiario = CambioTesteSupport.aplicarTetoDiario(elegiveis);
         assertEquals(1, resultadosDiario.size());
         assertResultadoBaseAlimentacao(resultadosDiario.get(0));
 
-        List<ResultadoTeto> resultadosHospedagem = AgregadorTetoHospedagem.aplicar(elegiveis);
+        List<ResultadoTeto> resultadosHospedagem = CambioTesteSupport.aplicarTetoIndividual(elegiveis);
         assertEquals(1, resultadosHospedagem.size());
         ResultadoTeto hospedagem = resultadosHospedagem.get(0);
         assertEquals(new BigDecimal("250.00"), hospedagem.valorReembolsavel(),
@@ -383,11 +383,11 @@ class RegraViagemEfeitoNuloTest {
         List<ItemAvaliado> elegiveis = elegiveisParaTetos(json, tabelaEur);
         assertEquals(2, elegiveis.size(), "alimentação (BRL) e hospedagem (EUR) não devem colidir por duplicidade econômica");
 
-        List<ResultadoTeto> resultadosDiario = AgregadorTetoDiario.aplicar(elegiveis);
+        List<ResultadoTeto> resultadosDiario = CambioTesteSupport.aplicarTetoDiario(elegiveis);
         assertEquals(1, resultadosDiario.size());
         assertResultadoBaseAlimentacao(resultadosDiario.get(0));
 
-        List<ResultadoTeto> resultadosHospedagem = AgregadorTetoHospedagem.aplicar(elegiveis);
+        List<ResultadoTeto> resultadosHospedagem = CambioTesteSupport.aplicarTetoIndividual(elegiveis);
         assertEquals(1, resultadosHospedagem.size());
         ResultadoTeto hospedagem = resultadosHospedagem.get(0);
         assertEquals(new BigDecimal("250.00"), hospedagem.valorReembolsavel(),
