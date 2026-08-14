@@ -1309,7 +1309,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
   - **Commit sugerido:** `test(T-052): integra despesas-envelope.json (Rafael/CC-COMERCIAL) — total 1.143,26`
   - **Status:** [x] concluída
 
-- [ ] **T-053** — Integração envelope — Dani / centro de custo desconhecido — R$373,76
+- [x] **T-053** — Integração envelope — Dani / centro de custo desconhecido — R$373,76
   - **O que faz:** processa `exemplos/envelope/despesas-envelope-cc-desconhecido.json` (Dani Okonkwo, `CC-SUPORTE-N2`, fora da tabela) com `exemplos/envelope/politica-v4.json` e `exemplos/envelope/cambio.json` reais, confirmando `total_reembolsavel = 373.76` (CA-040), comparado estruturalmente contra um fixture manual construído a partir de `spec.md` §12.4 (quatro itens `f-001` a `f-004`, todos sob a política `padrao`).
   - **RN atendidas:** RN-019, RN-020.
   - **CA atendidos:** CA-040.
@@ -1328,7 +1328,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
     mvn -q test -Dtest=IntegracaoEnvelopeTest
     ```
   - **Commit sugerido:** `test(T-053): integra despesas-envelope-cc-desconhecido.json (Dani) — total 373,76`
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 - [ ] **T-054** — Execução real da suíte e do JAR com as quatro flags
   - **O que faz:** verificação manual, documentada, de que a suíte inteira passa (`mvn test`) e que o JAR empacotado (`mvn package`) executa de ponta a ponta com as quatro flags reais contra os **quatro** cenários financeiros do Dia 2 — (1) baseline histórica, 585.43; (2) política v4/`CC-ENG-PLATAFORMA`, 351.43, usando o fixture de envelope criado em T-051; (3) Rafael, 1143.26; (4) Dani, 373.76 —, produzindo os totais já confirmados em T-050 a T-053 também pelo binário real, não só pelos testes JUnit. As quatro saídas são escritas dentro de `target/` (diretório de build, não versionado), nunca como arquivo solto na raiz do repositório — assim nenhum resultado manual fica pendente como arquivo não rastreado em `git status`. Esta task **sempre** gera um commit, sem exceção: não há cenário de "task concluída sem commit". Se algo divergir entre o teste automatizado e a execução real do JAR, o defeito é corrigido nesta mesma task, e a mensagem de commit passa de `test(T-054)` para `fix(T-054)`.
