@@ -8,8 +8,8 @@
 
 **Versão:** 1.1 · **Status:** aprovado · **Última alteração:** 2026-08-05
 **Baseado em:** spec `1.2` (aprovada) · plan `1.1` (aprovado)
-**Total de tasks:** 58 (`T-001` a `T-058`) — `T-001` a `T-021` concluídas (Dia 1, spec 1.1/plan 1.0); `T-022` a `T-058` pendentes (Dia 2, política v4, spec 1.2/plan 1.1).
-**Estimativa de commits — Dia 1:** 22 (já realizados, ver histórico abaixo). **Dia 2:** 37 (uma task, um commit — nenhuma exceção nesta rodada).
+**Total de tasks:** 60 (`T-001` a `T-060`) — `T-001` a `T-060` concluídas.
+**Planejamento original de commits — Dia 1:** 22. **Absorção do Dia 2:** 37 tasks (`T-022` a `T-058`). As tasks `T-059` e `T-060` foram acrescentadas posteriormente para relatório e fechamento documental. Desvios reais da regra de commit único, quando ocorreram, são preservados no histórico e declarados em `docs/RELATORIO.md`.
 
 ---
 
@@ -30,6 +30,8 @@ Vale para toda task deste arquivo, sem exceção:
 9. Toda mensagem de commit referencia `T-NNN`, no formato `tipo(T-NNN): descrição` — exceto commits de documentação normativa, que usam `docs(spec):`, `docs(plan):`, `docs(tasks):`, `docs(readme):` com `[T-NNN]` citado no corpo da mensagem.
 10. A task só é **oficialmente concluída** depois que o commit for criado com sucesso. Se o commit falhar (ex.: hook rejeitando o conteúdo), corrigir o problema e tentar novamente — sem iniciar a task seguinte.
 11. **Não iniciar a task seguinte enquanto os exports da task atual não estiverem versionados** no commit dela.
+
+**Nota de execução final:** o `/export` nativo do Claude Code foi o mecanismo previsto originalmente. Após a indisponibilidade do Claude Code e a mudança de ferramenta a partir de T-054, as sessões passaram a usar registros transparentes produzidos no ChatGPT Codex; esses registros declaram explicitamente que não são `/export` nativo. Essa adaptação documenta o processo como ele ocorreu e não deve ser apresentada como se fosse a regra original. As lacunas e os desvios reais permanecem declarados em `docs/RELATORIO.md`.
 
 **Regra de commit único por task:** implementação e os testes que a acompanham entram **no mesmo commit**, e somente depois de `mvn test` passar por inteiro — nunca um commit `feat` seguido de um commit `test` seco seguido. Não se commitam testes falhando. `T-002` é a única exceção autorizada (dois commits, ver task). Não criar commits artificiais só para engordar o `git log`.
 
@@ -1585,7 +1587,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
   - **Commit sugerido:** `docs(T-059): consolida relatorio final com evidencias dos 4 Ds e do envelope`
   - **Status:** [x] concluída
 
-- [ ] **T-060** — Auditar e corrigir documentação final da entrega
+- [x] **T-060** — Auditar e corrigir documentação final da entrega
   - **O que faz:** corrige exclusivamente inconsistências factuais e placeholders documentais encontrados na auditoria final, sem alterar regra de negócio nem comportamento do produto.
   - **Dependências:** T-059.
   - **Arquivos previstos:**
@@ -1620,7 +1622,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
     ```
     mais os quatro comandos `java -jar` exatamente como documentados no README.
   - **Commit sugerido:** `docs(T-060): conclui auditoria documental e verificacao final da entrega`
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 ---
 

@@ -1,49 +1,92 @@
 # CLAUDE.md
 
-> Este arquivo é lido pelo Claude Code no início de toda sessão. É onde moram as
-> convenções que você não quer repetir em todo prompt.
-> Substitua os `<...>` e apague o que não usar. Mantenha curto — CLAUDE.md longo
-> é CLAUDE.md ignorado.
+> Orientação atual para quem trabalhar neste repositório daqui em diante. Este
+> arquivo descreve o estado final do projeto e não pretende reconstruir as
+> instruções disponíveis durante sessões históricas.
 
-## O projeto
+## 1. O projeto
 
-Motor de cálculo de reembolso de despesas corporativas. CLI que lê um JSON de
-despesas e emite um JSON com o valor reembolsável e a justificativa de cada item.
+Motor de cálculo de reembolso de despesas corporativas. A aplicação é uma CLI
+que lê despesas, política externa e câmbio externo, aplica as regras de
+reembolso e grava um JSON auditável com a decisão de cada item e o total.
 
-## Fonte da verdade
+Não há servidor HTTP nem framework web.
 
-`specs/001-motor-reembolso/spec.md` define **o que** o sistema faz.
-`specs/001-motor-reembolso/plan.md` define **como**.
-`specs/001-motor-reembolso/tasks.md` define **em que ordem**.
+## 2. Stack atual
 
-Quando o código e a spec discordarem, a spec está certa e o código é o bug —
-a menos que a spec esteja errada, e nesse caso corrigimos a spec primeiro e
-registramos em `DECISIONS.md`.
+- Java 21;
+- Maven;
+- Jackson para leitura e escrita de JSON;
+- `BigDecimal` para valores monetários;
+- JUnit 5 para testes.
 
-**Antes de implementar qualquer coisa, leia a task correspondente em `tasks.md`.**
-Se o que eu pedi não está coberto por nenhuma task, me avise em vez de implementar.
+## 3. Comandos principais
 
-## Regras de trabalho
+Build:
 
-- Toda regra de negócio vive na spec, não no chat e não em comentário de código.
-- Se eu te explicar uma regra que não está na spec, **pare e me diga isso** antes
-  de escrever código. Isso é um bug de spec.
-- Todo commit referencia uma task: `feat(T-003): <descrição>`.
-  Mudanças de documentação: `docs(spec):`, `docs(plan):`, `docs(tasks):`.
-- Nenhuma regra de negócio entra sem teste.
+```text
+mvn -q package
+```
 
-## Stack e comandos
+Testes:
 
-- Linguagem: `<...>`
-- Rodar: `<comando>`
-- Testes: `<comando>`
-- Lint/format: `<comando>`
+```text
+mvn -q test
+```
 
-## Convenções de código
+O build produz `target/motor-reembolso.jar`. A execução usa o contrato:
 
-- `<nomenclatura, estrutura de pastas, tratamento de erro, o que for relevante>`
-- Valores monetários: `<como são representados — decimal, centavos em inteiro, etc.>`
+```text
+java -jar target/motor-reembolso.jar calcular --input <entrada.json> --output <saida.json> --politica <politica.json> --cambio <cambio.json>
+```
 
-## Fora de escopo
+As quatro flags são obrigatórias. O `README.md` contém os quatro cenários de
+execução verificados e os códigos de saída.
 
-- `<o que este projeto explicitamente não faz — evita que o agente invente feature>`
+## 4. Fontes de verdade e evidências
+
+- `specs/001-motor-reembolso/spec.md` define o comportamento e as regras de negócio.
+- `specs/001-motor-reembolso/plan.md` define a arquitetura e as decisões técnicas.
+- `specs/001-motor-reembolso/tasks.md` define a decomposição e a ordem do trabalho.
+- `specs/001-motor-reembolso/DECISIONS.md` registra decisões e correções da especificação.
+- `docs/sessions/` preserva registros de sessões e evidências do processo SDD.
+- `docs/RELATORIO.md` consolida as evidências finais do desafio.
+
+Quando código e spec divergirem, trate o código como defeito. Se a própria spec
+precisar mudar, corrija primeiro a documentação normativa e registre a decisão
+em `DECISIONS.md` antes de alterar o comportamento.
+
+## 5. Convenções de trabalho e código
+
+- Leia integralmente a task correspondente antes de implementar uma mudança.
+- Mudanças seguem as tasks e nenhuma regra de negócio entra sem teste.
+- Classes de teste usam o sufixo `*Test` e são executadas por `mvn -q test`.
+- Valores monetários são representados com `BigDecimal`; a saída apresenta
+  valores monetários com duas casas decimais.
+- Preserve a rastreabilidade entre spec, decisões, plan, tasks, testes, sessões
+  e commits.
+- Não altere uma regra de negócio sem refletir primeiro a mudança na
+  documentação normativa.
+
+## 6. Substituição controlada de componentes legados
+
+O estado final não contém `PoliticaReembolso` nem `AgregadorTetoHospedagem`.
+Também foram removidas as APIs e sobrecargas históricas que dependiam desses
+componentes e o construtor de compatibilidade de dez argumentos de
+`ItemValidado`.
+
+A migração foi concluída de forma controlada: T-055 migrou os consumidores para
+`PoliticaExterna`, `TabelaPoliticaResolvida`, `AgregadorTetoIndividual` e o
+construtor completo de catorze argumentos de `ItemValidado`; T-056 removeu os
+componentes e APIs antigos depois da migração e confirmou compilação e suíte
+completa verdes.
+
+Em substituições futuras, preserve essa ordem: inventarie os consumidores,
+migre-os e verifique a suíte antes de remover o componente superado e suas APIs
+de compatibilidade.
+
+## 7. Fora de escopo
+
+O Item C do envelope do Dia 2 permanece fora de escopo. Não existe estado
+`AGUARDANDO_APROVACAO`, fila manual nem comportamento especial de aprovação para
+itens com valor reembolsável acima de R$500.
