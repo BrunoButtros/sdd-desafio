@@ -1434,7 +1434,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
   - **Commit sugerido:** `refactor(T-056): remove PoliticaReembolso, AgregadorTetoHospedagem, sobrecargas dependentes e o construtor de compatibilidade de ItemValidado`
   - **Status:** [x] concluída
 
-- [ ] **T-057** — README com CLI de quatro flags e documentação de política/câmbio
+- [x] **T-057** — README com CLI de quatro flags e documentação de política/câmbio
   - **O que faz:** atualiza `README.md` (criado em T-021) para refletir o contrato de execução do Dia 2: as quatro flags obrigatórias (`--input`/`--output`/`--politica`/`--cambio`), exemplos de execução reais contra os quatro cenários financeiros (baseline histórica, política v4, Rafael, Dani), a tabela de códigos de saída atualizada (`0`/`2`/`3`, com a nota de que `2` agora também cobre política/câmbio inválidos), e como rodar a suíte de regressão (`mvn test`, incluindo `RegressaoHistoricaTest`/`IntegracaoEnvelopeTest`).
   - **RN atendidas:** nenhuma nova — mesmo escopo de T-021, estendido.
   - **CA atendidos:** nenhum novo — documentação dos comportamentos já comprovados por CA-037 a CA-044.
@@ -1458,7 +1458,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
     java -jar target/motor-reembolso.jar calcular --input exemplos/envelope/despesas-envelope-cc-desconhecido.json --output target/verificacao-dani.json --politica exemplos/envelope/politica-v4.json --cambio exemplos/envelope/cambio.json
     ```
   - **Commit sugerido:** `docs(readme): [T-057] documenta CLI de quatro flags e politica/cambio externos`
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 - [ ] **T-058** — Revisão final de rastreabilidade e confirmação do item C fora de escopo
   - **O que faz:** revisão documental de fechamento do Dia 2: confere, identificador por identificador, que RN-019 a RN-022 e CA-024 a CA-049 aparecem em pelo menos uma task deste arquivo (matriz ao final deste documento) e em pelo menos um teste executável; confirma, por leitura de `spec.md` §3/AMB-033 e `plan.md` §20, que o item C (fila de aprovação manual) permanece fora de escopo — nenhum código, task ou teste o antecipa. Task documental, sem código de produção.
