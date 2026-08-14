@@ -1549,6 +1549,79 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
 | DT-009 | T-002 (convenção `*Test` adotada desde o primeiro teste), T-020 (`mvn test` executa toda a suíte, inclusive integração) | Suíte completa executada por `mvn test` |
 | DT-010 | T-019 | `EscritaAtomicaSaidaTest` |
 
+### Bloco L — Relatório e fechamento da entrega
+
+- [x] **T-059** — Consolidar relatório final com evidências dos 4 Ds e do envelope
+  - **O que faz:** preenche `docs/RELATORIO.md` com evidências verificáveis de Delegação, Descrição, Discernimento, Diligência e da absorção do envelope do Dia 2, combinando fatos rastreáveis do repositório/sessões com respostas pessoais fornecidas pelo aluno. Não inventa intenção, tempo, percentual de revisão ou erro de agente.
+  - **Dependências:** T-058.
+  - **Arquivos que cria/modifica:**
+    - `docs/RELATORIO.md`
+    - `specs/001-motor-reembolso/tasks.md`
+    - `docs/sessions/dia2-t059-relatorio-final-codex.md`
+  - **Passos:**
+    1. Usar as respostas pessoais fornecidas por Bruno e as evidências já auditadas.
+    2. Preencher todos os blocos do template.
+    3. Em Delegação, separar decisões humanas de execução delegada e registrar a troca Claude Code -> ChatGPT Codex.
+    4. Em Descrição, usar a ambiguidade dos tetos de alimentação/transporte como exemplo principal.
+    5. Em Discernimento, usar como caso principal o erro factual inicial na estrutura de `cambio.json`; pode citar o falso teste-canário de arredondamento como segundo caso.
+    6. Em Diligência, registrar verificações reais e também falhas reais do processo, sem escondê-las.
+    7. No Envelope, registrar a ordem spec -> plan -> tasks -> implementação, baseline e quatro cenários finais.
+    8. Declarar de forma transparente as sessões ausentes de T-005, T-010, T-018 e T-024.
+    9. Citar arquivos, linhas, commits e sessões.
+    10. Remover todos os placeholders do relatório.
+  - **Critério de conclusão:**
+    - todos os blocos do template respondidos;
+    - pelo menos um erro concreto do agente comprovado;
+    - nenhuma métrica ou intenção inventada;
+    - lacunas reais do processo declaradas;
+    - relatório revisado externamente;
+    - `mvn -q test` verde antes do fechamento.
+  - **Comandos de verificação:**
+    ```
+    git grep -n -E "<.*>|Preencha|Descreva|cole" -- docs/RELATORIO.md
+    git diff --check
+    mvn -q test
+    ```
+  - **Commit sugerido:** `docs(T-059): consolida relatorio final com evidencias dos 4 Ds e do envelope`
+  - **Status:** [x] concluída
+
+- [ ] **T-060** — Auditar e corrigir documentação final da entrega
+  - **O que faz:** corrige exclusivamente inconsistências factuais e placeholders documentais encontrados na auditoria final, sem alterar regra de negócio nem comportamento do produto.
+  - **Dependências:** T-059.
+  - **Arquivos previstos:**
+    - `CLAUDE.md`
+    - `specs/001-motor-reembolso/spec.md`
+    - `specs/001-motor-reembolso/plan.md`
+    - `specs/001-motor-reembolso/tasks.md`
+    - `docs/sessions/dia2-t060-auditoria-final-codex.md`
+  - **Passos:**
+    1. Completar `CLAUDE.md` com o estado final real do projeto, sem fingir que essas instruções existiam retroativamente.
+    2. Resolver as referências quebradas a `CLAUDE.md §6`.
+    3. Corrigir o cabeçalho de `tasks.md` que ainda chama T-022 a T-058 de pendentes.
+    4. Corrigir em `plan.md` as referências inexistentes a `NotaFiscalConvertidaTest`, apontando para o teste real.
+    5. Corrigir somente as afirmações temporais obsoletas já identificadas em `spec.md`, sem mudar requisitos.
+    6. Confirmar ausência de placeholders obrigatórios.
+    7. Executar suíte, package e os quatro cenários documentados no README.
+    8. Auditar a entrega final sem fabricar sessões históricas ausentes.
+  - **Critério de conclusão:**
+    - documentação internamente consistente;
+    - CLAUDE.md sem placeholders;
+    - referências apontam para artefatos existentes;
+    - nenhuma regra de negócio alterada;
+    - `mvn -q test` verde;
+    - `mvn -q package` verde;
+    - totais 585.43, 351.43, 1143.26 e 373.76 preservados;
+    - T-001 a T-060 concluídas.
+  - **Comandos de verificação:**
+    ```
+    git diff --check
+    mvn -q test
+    mvn -q package
+    ```
+    mais os quatro comandos `java -jar` exatamente como documentados no README.
+  - **Commit sugerido:** `docs(T-060): conclui auditoria documental e verificacao final da entrega`
+  - **Status:** [ ] pendente
+
 ---
 
 ## Fase 8 (Dia 2) — Matrizes de cobertura
