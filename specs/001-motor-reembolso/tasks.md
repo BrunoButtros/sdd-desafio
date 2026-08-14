@@ -1460,7 +1460,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
   - **Commit sugerido:** `docs(readme): [T-057] documenta CLI de quatro flags e politica/cambio externos`
   - **Status:** [x] concluída
 
-- [ ] **T-058** — Revisão final de rastreabilidade e confirmação do item C fora de escopo
+- [x] **T-058** — Revisão final de rastreabilidade e confirmação do item C fora de escopo
   - **O que faz:** revisão documental de fechamento do Dia 2: confere, identificador por identificador, que RN-019 a RN-022 e CA-024 a CA-049 aparecem em pelo menos uma task deste arquivo (matriz ao final deste documento) e em pelo menos um teste executável; confirma, por leitura de `spec.md` §3/AMB-033 e `plan.md` §20, que o item C (fila de aprovação manual) permanece fora de escopo — nenhum código, task ou teste o antecipa. Task documental, sem código de produção.
   - **RN atendidas:** nenhuma nova — é auditoria de rastreabilidade.
   - **CA atendidos:** nenhum novo — auditoria final da cobertura de CA-024 a CA-049.
@@ -1479,7 +1479,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
     git grep -i "AGUARDANDO_APROVACAO" -- src/main/java
     ```
   - **Commit sugerido:** `docs(tasks): [T-058] confirma rastreabilidade completa do Dia 2 e item C fora de escopo`
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 ---
 
