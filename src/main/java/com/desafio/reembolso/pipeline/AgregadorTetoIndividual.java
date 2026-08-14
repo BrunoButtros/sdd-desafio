@@ -19,8 +19,7 @@ import java.util.Objects;
  * de política resolvida (spec RN-013, RN-019, AMB-037; plan §11, DT-017) —
  * não apenas {@code hospedagem}. Reaproveita o corte parcial de
  * {@link AgregadorTetoDiario#aplicarCorte}, em substituição a
- * {@link AgregadorTetoHospedagem} (mantido para a suíte histórica até
- * T-055/T-056). {@code hospedagem} produz
+ * do antigo agregador exclusivo de hospedagem. {@code hospedagem} produz
  * {@link MotivoCodigo#TETO_HOSPEDAGEM_APLICADO}/{@link RegraNegocio#RN_013};
  * qualquer outra categoria sob esse mecanismo produz
  * {@link MotivoCodigo#TETO_INDIVIDUAL_APLICADO}/{@link RegraNegocio#RN_019}.

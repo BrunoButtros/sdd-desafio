@@ -57,6 +57,10 @@ public final class DetectorIdDuplicado {
                 item.getValor(),
                 item.getTemNotaFiscal(),
                 item.getValorInformado(),
-                motivos);
+                motivos,
+                item.getMoeda(),
+                item.getTaxaCambioAplicada(),
+                item.getDataCotacaoUtilizada(),
+                item.getValorConvertidoBruto());
     }
 }

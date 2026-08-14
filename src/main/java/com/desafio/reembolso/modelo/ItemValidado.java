@@ -44,20 +44,6 @@ public final class ItemValidado {
                          BigDecimal valor,
                          Boolean temNotaFiscal,
                          JsonNode valorInformado,
-                         List<Motivo> motivos) {
-        this(indiceEntrada, id, data, categoria, descricao, fornecedor, valor, temNotaFiscal,
-                valorInformado, motivos, "BRL", BigDecimal.ONE, null, valor);
-    }
-
-    public ItemValidado(int indiceEntrada,
-                         String id,
-                         LocalDate data,
-                         String categoria,
-                         String descricao,
-                         String fornecedor,
-                         BigDecimal valor,
-                         Boolean temNotaFiscal,
-                         JsonNode valorInformado,
                          List<Motivo> motivos,
                          String moeda,
                          BigDecimal taxaCambioAplicada,

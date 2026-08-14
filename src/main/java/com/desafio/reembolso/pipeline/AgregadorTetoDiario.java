@@ -4,7 +4,6 @@ import com.desafio.reembolso.modelo.Decisao;
 import com.desafio.reembolso.modelo.ItemValidado.Motivo;
 import com.desafio.reembolso.modelo.MotivoCodigo;
 import com.desafio.reembolso.modelo.Periodicidade;
-import com.desafio.reembolso.modelo.PoliticaReembolso;
 import com.desafio.reembolso.modelo.RegraNegocio;
 import com.desafio.reembolso.modelo.TabelaCategoria;
 import com.desafio.reembolso.modelo.TabelaPoliticaResolvida;
@@ -19,7 +18,6 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 /**
  * Agrega o saldo diário de {@code alimentacao} e {@code transporte_urbano}
@@ -31,7 +29,6 @@ import java.util.Set;
  */
 public final class AgregadorTetoDiario {
 
-    private static final Set<String> CATEGORIAS_TETO_DIARIO = Set.of("alimentacao", "transporte_urbano");
     private static final BigDecimal ZERO_ESCALA_2 = new BigDecimal("0.00");
 
     private static final Motivo MOTIVO_TETO_ALIMENTACAO =
@@ -43,24 +40,10 @@ public final class AgregadorTetoDiario {
     private static final Motivo MOTIVO_TETO_RN019 =
             new Motivo(MotivoCodigo.TETO_DIARIO_APLICADO, RegraNegocio.RN_019, null);
 
-    private static final AgregadorTetoDiario PADRAO =
-            new AgregadorTetoDiario(PoliticaReembolso.padrao());
-
-    private final PoliticaReembolso politica;
-
-    private AgregadorTetoDiario(PoliticaReembolso politica) {
-        this.politica = Objects.requireNonNull(politica);
-    }
-
-    public static List<ResultadoTeto> aplicar(List<ItemAvaliado> itens) {
-        return PADRAO.aplicarInterno(itens);
-    }
-
     /**
      * Sobrecarga por política externa (RN-011, RN-012, RN-015, RN-019;
      * DT-017): participa quem tem {@code periodicidade == DIA} na tabela
-     * resolvida, nunca pelo nome da categoria — {@link #CATEGORIAS_TETO_DIARIO}
-     * e {@link PoliticaReembolso} não são consultados aqui.
+     * resolvida, nunca pelo nome da categoria.
      */
     public static List<ResultadoTeto> aplicar(List<ItemAvaliado> itens, TabelaPoliticaResolvida tabela) {
         Objects.requireNonNull(itens, "itens");
@@ -127,53 +110,6 @@ public final class AgregadorTetoDiario {
         return MOTIVO_TETO_RN019;
     }
 
-    private List<ResultadoTeto> aplicarInterno(List<ItemAvaliado> itens) {
-        List<ItemAvaliado> aplicaveis = new ArrayList<>();
-        for (ItemAvaliado item : itens) {
-            if (item.elegivel() && CATEGORIAS_TETO_DIARIO.contains(item.itemNormalizado().categoriaNormalizada())) {
-                aplicaveis.add(item);
-            }
-        }
-
-        List<ItemAvaliado> ordenadosPorIndice = new ArrayList<>(aplicaveis);
-        ordenadosPorIndice.sort(Comparator.comparingInt(i -> i.itemNormalizado().item().getIndiceEntrada()));
-
-        Map<ChaveTetoDiario, BigDecimal> saldos = new HashMap<>();
-        Map<ItemAvaliado, ResultadoTeto> resultadosPorItem = new IdentityHashMap<>();
-
-        for (ItemAvaliado item : ordenadosPorIndice) {
-            String categoria = item.itemNormalizado().categoriaNormalizada();
-            ChaveTetoDiario chave = chaveDe(item);
-            BigDecimal saldo = saldos.computeIfAbsent(chave, k -> limiteInicial(categoria));
-
-            if (saldo.compareTo(BigDecimal.ZERO) == 0) {
-                resultadosPorItem.put(item,
-                        new ResultadoTeto(item, ZERO_ESCALA_2, Decisao.NAO_REEMBOLSADO_TETO_ESGOTADO, List.of(MOTIVO_ESGOTADO)));
-                continue;
-            }
-
-            Motivo motivoAplicado = "alimentacao".equals(categoria) ? MOTIVO_TETO_ALIMENTACAO : MOTIVO_TETO_TRANSPORTE;
-            ResultadoTeto resultado = aplicarCorte(item, saldo, motivoAplicado);
-            resultadosPorItem.put(item, resultado);
-
-            saldos.put(chave, resultado.decisao() == Decisao.INTEGRALMENTE_REEMBOLSADO
-                    ? saldo.subtract(resultado.valorReembolsavel())
-                    : ZERO_ESCALA_2);
-        }
-
-        List<ResultadoTeto> resultado = new ArrayList<>(aplicaveis.size());
-        for (ItemAvaliado item : aplicaveis) {
-            resultado.add(resultadosPorItem.get(item));
-        }
-        return List.copyOf(resultado);
-    }
-
-    private BigDecimal limiteInicial(String categoriaNormalizada) {
-        return "alimentacao".equals(categoriaNormalizada)
-                ? politica.getLimiteDiarioAlimentacao()
-                : politica.getLimiteDiarioTransporteUrbano();
-    }
-
     private static ChaveTetoDiario chaveDe(ItemAvaliado item) {
         return new ChaveTetoDiario(
                 item.itemNormalizado().item().getData(),
@@ -186,8 +122,7 @@ public final class AgregadorTetoDiario {
      * normalizado não ultrapassa o limite, parcial com o motivo fornecido
      * caso contrário. Não decide saldo esgotado — quem chama já garantiu
      * {@code limiteDisponivel} positivo. Não conhece categoria nem consulta
-     * {@link PoliticaReembolso} diretamente, para ser reaproveitável pelo
-     * teto individual de hospedagem (T-014).
+     * política diretamente, para ser reaproveitável pelo teto individual.
      */
     static ResultadoTeto aplicarCorte(ItemAvaliado item, BigDecimal limiteDisponivel, Motivo motivoTetoAplicado) {
         Objects.requireNonNull(item, "item");

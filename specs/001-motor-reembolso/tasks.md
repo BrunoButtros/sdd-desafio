@@ -1402,7 +1402,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
   - **Commit sugerido:** `refactor(T-055): migra todos os consumidores de PoliticaReembolso, AgregadorTetoHospedagem e do construtor de compatibilidade de ItemValidado`
   - **Status:** [x] concluída
 
-- [ ] **T-056** — Remover `PoliticaReembolso`, `AgregadorTetoHospedagem` e o construtor de compatibilidade de `ItemValidado`
+- [x] **T-056** — Remover `PoliticaReembolso`, `AgregadorTetoHospedagem` e o construtor de compatibilidade de `ItemValidado`
   - **O que faz:** segundo, terceiro e quarto passos de `CLAUDE.md` §6: com todos os consumidores já migrados (T-055), remove `src/main/java/com/desafio/reembolso/modelo/PoliticaReembolso.java` e `src/main/java/com/desafio/reembolso/pipeline/AgregadorTetoHospedagem.java`, e **obrigatoriamente** também todas as sobrecargas e imports que dependem deles — nenhuma sobrecarga de compatibilidade que dependa de uma classe removida é mantida: as sobrecargas antigas de `AvaliadorRegrasIndividuais.avaliar(item)`/`avaliar(item, envelope)` e `AgregadorTetoDiario.aplicar(itens)` são removidas nesta task, porque T-055 já garantiu que nenhum teste as usa mais. Nesta mesma task, remove-se também o construtor de dez argumentos de `ItemValidado` (criado em T-029, exclusivamente como compatibilidade incremental) e qualquer delegação criada só para sustentá-lo — `ItemValidado` passa a ter um único construtor, o completo de catorze argumentos, porque T-055 já garantiu que nenhum teste depende mais do antigo.
   - **RN atendidas:** nenhuma nova — remoção de código superado (DT-007 → DT-011).
   - **CA atendidos:** nenhum novo — remoção controlada de componentes superados após a migração.
@@ -1432,7 +1432,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
     mvn -q test
     ```
   - **Commit sugerido:** `refactor(T-056): remove PoliticaReembolso, AgregadorTetoHospedagem, sobrecargas dependentes e o construtor de compatibilidade de ItemValidado`
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 - [ ] **T-057** — README com CLI de quatro flags e documentação de política/câmbio
   - **O que faz:** atualiza `README.md` (criado em T-021) para refletir o contrato de execução do Dia 2: as quatro flags obrigatórias (`--input`/`--output`/`--politica`/`--cambio`), exemplos de execução reais contra os quatro cenários financeiros (baseline histórica, política v4, Rafael, Dani), a tabela de códigos de saída atualizada (`0`/`2`/`3`, com a nota de que `2` agora também cobre política/câmbio inválidos), e como rodar a suíte de regressão (`mvn test`, incluindo `RegressaoHistoricaTest`/`IntegracaoEnvelopeTest`).
