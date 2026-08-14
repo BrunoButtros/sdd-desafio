@@ -1330,7 +1330,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
   - **Commit sugerido:** `test(T-053): integra despesas-envelope-cc-desconhecido.json (Dani) — total 373,76`
   - **Status:** [x] concluída
 
-- [ ] **T-054** — Execução real da suíte e do JAR com as quatro flags
+- [x] **T-054** — Execução real da suíte e do JAR com as quatro flags
   - **O que faz:** verificação manual, documentada, de que a suíte inteira passa (`mvn test`) e que o JAR empacotado (`mvn package`) executa de ponta a ponta com as quatro flags reais contra os **quatro** cenários financeiros do Dia 2 — (1) baseline histórica, 585.43; (2) política v4/`CC-ENG-PLATAFORMA`, 351.43, usando o fixture de envelope criado em T-051; (3) Rafael, 1143.26; (4) Dani, 373.76 —, produzindo os totais já confirmados em T-050 a T-053 também pelo binário real, não só pelos testes JUnit. As quatro saídas são escritas dentro de `target/` (diretório de build, não versionado), nunca como arquivo solto na raiz do repositório — assim nenhum resultado manual fica pendente como arquivo não rastreado em `git status`. Esta task **sempre** gera um commit, sem exceção: não há cenário de "task concluída sem commit". Se algo divergir entre o teste automatizado e a execução real do JAR, o defeito é corrigido nesta mesma task, e a mensagem de commit passa de `test(T-054)` para `fix(T-054)`.
   - **RN atendidas:** nenhuma nova — é verificação, não regra de negócio.
   - **CA atendidos:** confirma CA-037 a CA-040 via binário real, fora do JUnit.
@@ -1356,7 +1356,7 @@ Base normativa: `spec.md` `1.2` (aprovada) e `plan.md` `1.1` (aprovado), ambos j
     java -jar target/motor-reembolso.jar calcular --input exemplos/envelope/despesas-envelope-cc-desconhecido.json --output target/verificacao-dani.json --politica exemplos/envelope/politica-v4.json --cambio exemplos/envelope/cambio.json
     ```
   - **Commit sugerido:** `test(T-054): confirma execucao real do jar com as quatro flags nos quatro cenarios` — sempre gerado, contendo no mínimo a atualização do checkbox/status da task e o export da sessão (os quatro arquivos de evidência ficam em `target/`, fora do commit, exatamente para não deixar nenhum arquivo não rastreado pendente); se um defeito real exigiu correção, a mensagem passa a `fix(T-054)`.
-  - **Status:** [ ] pendente
+  - **Status:** [x] concluída
 
 ---
 
